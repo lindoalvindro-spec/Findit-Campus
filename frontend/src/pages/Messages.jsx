@@ -16,6 +16,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const typingChannelRef = useRef(null);
@@ -221,7 +222,9 @@ const Messages = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeChat || !user) return;
+    if (!newMessage.trim() || !activeChat || !user || isSending) return;
+
+    setIsSending(true);
 
     const msgText = newMessage.trim();
     setNewMessage(''); // optimistic clear
@@ -254,6 +257,9 @@ const Messages = () => {
     } else {
       fetchConversations(user.id); // Update sidebar last message
     }
+
+    // Anti-spam cooldown 500ms
+    setTimeout(() => setIsSending(false), 500);
   };
 
   if (loading) {
@@ -403,7 +409,7 @@ const Messages = () => {
                     />
                     <button 
                       type="submit"
-                      disabled={!newMessage.trim()}
+                      disabled={!newMessage.trim() || isSending}
                       className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center disabled:opacity-50 disabled:bg-surface-variant disabled:text-outline hover:bg-primary-container hover:text-on-primary-container transition-colors transform active:scale-95"
                     >
                       <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
