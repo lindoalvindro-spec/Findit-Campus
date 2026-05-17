@@ -20,6 +20,7 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const typingChannelRef = useRef(null);
@@ -274,6 +275,25 @@ const Messages = () => {
     setTimeout(() => setIsSending(false), 500);
   };
 
+  const handleDeleteConversation = async () => {
+    if (!user || !activeChat) return;
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeChat.id}),and(sender_id.eq.${activeChat.id},receiver_id.eq.${user.id})`);
+
+    if (error) {
+      toast.error('Gagal menghapus percakapan: ' + error.message);
+    } else {
+      toast.success('Percakapan berhasil dihapus.');
+      setMessages([]);
+      setActiveChat(null);
+      setShowDeleteConfirm(false);
+      fetchConversations(user.id);
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-background min-h-screen flex flex-col">
@@ -288,6 +308,41 @@ const Messages = () => {
   return (
     <div className="bg-background font-body-md h-screen flex flex-col overflow-hidden">
       <Navbar />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative bg-surface rounded-2xl border border-outline-variant shadow-2xl w-full max-w-[400px] overflow-hidden animate-toast-enter">
+            {/* Header */}
+            <div className="p-6 pb-2 flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <span className="material-symbols-outlined text-red-500 text-[28px]">delete_forever</span>
+              </div>
+              <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Hapus Percakapan?</h3>
+              <p className="text-on-surface-variant text-sm leading-relaxed">
+                Semua pesan dengan <strong>{activeChat?.full_name}</strong> akan dihapus secara permanen dan tidak dapat dikembalikan.
+              </p>
+            </div>
+            {/* Actions */}
+            <div className="p-4 pt-6 flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-outline-variant text-on-surface font-label-md hover:bg-surface-container-low transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDeleteConversation}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-red-500 text-white font-label-md hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">delete</span>
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <main className="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-md md:py-lg flex overflow-hidden h-full">
         <div className="flex w-full bg-surface rounded-2xl border border-outline-variant shadow-sm overflow-hidden h-[calc(100vh-140px)]">
@@ -361,7 +416,14 @@ const Messages = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface">{activeChat.full_name}</h3>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface flex-grow">{activeChat.full_name}</h3>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="p-2 rounded-full text-on-surface-variant hover:text-red-500 hover:bg-red-50 transition-colors"
+                    title="Hapus percakapan"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
                 </div>
 
                 {/* Messages Area */}
