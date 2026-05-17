@@ -23,7 +23,7 @@ CREATE TABLE messages (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   sender_id UUID REFERENCES users(id),
   receiver_id UUID REFERENCES users(id),
-  item_id UUID REFERENCES lost_items(id),
+  item_id UUID REFERENCES lost_items(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
   is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
