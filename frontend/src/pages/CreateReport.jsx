@@ -5,9 +5,11 @@ import { supabase } from '../supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { checkText } from '../utils/contentFilter';
 import { checkImage } from '../utils/nsfwCheck';
+import { useToast } from '../components/Toast';
 
 const CreateReport = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get('edit');
   
@@ -30,7 +32,7 @@ const CreateReport = () => {
     const checkUserAndFetchData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert("Silakan masuk (login) terlebih dahulu untuk membuat/mengedit laporan.");
+        toast.warning('Silakan masuk (login) terlebih dahulu untuk membuat/mengedit laporan.');
         navigate('/auth');
         return;
       }
@@ -47,12 +49,12 @@ const CreateReport = () => {
           .single();
 
         if (error) {
-          alert("Gagal memuat data laporan: " + error.message);
+          toast.error('Gagal memuat data laporan: ' + error.message);
           navigate('/profile');
         } else if (data) {
           // Make sure the user owns this report
           if (data.user_id !== session.user.id) {
-            alert("Anda tidak memiliki akses untuk mengedit laporan ini.");
+            toast.error('Anda tidak memiliki akses untuk mengedit laporan ini.');
             navigate('/profile');
             return;
           }
@@ -81,7 +83,7 @@ const CreateReport = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert("Ukuran gambar terlalu besar. Maksimal 5MB.");
+        toast.warning('Ukuran gambar terlalu besar. Maksimal 5MB.');
         return;
       }
       const reader = new FileReader();
@@ -94,7 +96,7 @@ const CreateReport = () => {
         setLoading(false);
 
         if (!isSafe) {
-          alert(`🚫 Foto ditolak: ${reason} Silakan gunakan foto yang sesuai.`);
+          toast.error(`Foto ditolak: ${reason}`, 'Konten Tidak Sesuai');
           e.target.value = ''; // Reset file input
           return;
         }
@@ -108,7 +110,7 @@ const CreateReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      alert("Sesi Anda telah berakhir, silakan login kembali.");
+      toast.warning('Sesi Anda telah berakhir, silakan login kembali.');
       navigate('/auth');
       return;
     }
@@ -118,13 +120,13 @@ const CreateReport = () => {
     // Content filter check for title and description
     const titleCheck = checkText(formData.item_name);
     if (!titleCheck.isClean) {
-      alert('⚠️ Judul laporan mengandung kata yang tidak pantas. Mohon ubah judul Anda.');
+      toast.warning('Judul laporan mengandung kata yang tidak pantas. Mohon ubah judul Anda.', 'Konten Tidak Sesuai');
       setLoading(false);
       return;
     }
     const descCheck = checkText(formData.description);
     if (!descCheck.isClean) {
-      alert('⚠️ Deskripsi laporan mengandung kata yang tidak pantas. Mohon ubah deskripsi Anda.');
+      toast.warning('Deskripsi laporan mengandung kata yang tidak pantas. Mohon ubah deskripsi Anda.', 'Konten Tidak Sesuai');
       setLoading(false);
       return;
     }
@@ -162,9 +164,9 @@ const CreateReport = () => {
     setLoading(false);
     
     if (responseError) {
-      alert("Terjadi kesalahan: " + responseError.message);
+      toast.error('Terjadi kesalahan: ' + responseError.message);
     } else {
-      alert(isEditMode ? "Laporan berhasil diperbarui!" : "Laporan berhasil dibuat!");
+      toast.success(isEditMode ? 'Laporan berhasil diperbarui!' : 'Laporan berhasil dibuat!');
       navigate(isEditMode ? '/profile' : '/lost-items');
     }
   };

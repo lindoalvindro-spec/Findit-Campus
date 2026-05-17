@@ -9,3 +9,34 @@
     @apply w-full min-h-screen flex flex-col;
   }
 }
+
+/* Toast Notification Animations */
+@keyframes toast-enter {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-exit {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.9);
+  }
+}
+
+.animate-toast-enter {
+  animation: toast-enter 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.animate-toast-exit {
+  animation: toast-exit 0.35s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
+}

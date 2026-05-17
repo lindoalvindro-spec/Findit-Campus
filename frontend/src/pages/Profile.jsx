@@ -3,9 +3,11 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -26,7 +28,7 @@ const Profile = () => {
     const initProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert("Silakan login terlebih dahulu untuk mengakses profil.");
+        toast.warning('Silakan login terlebih dahulu untuk mengakses profil.');
         navigate('/auth');
         return;
       }
@@ -73,7 +75,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert("Ukuran gambar terlalu besar. Maksimal 2MB.");
+        toast.warning('Ukuran gambar terlalu besar. Maksimal 2MB.');
         return;
       }
       const reader = new FileReader();
@@ -94,9 +96,9 @@ const Profile = () => {
 
     setSavingProfile(false);
     if (error) {
-      alert("Gagal memperbarui profil: " + error.message);
+      toast.error('Gagal memperbarui profil: ' + error.message);
     } else {
-      alert("Profil berhasil diperbarui!");
+      toast.success('Profil berhasil diperbarui!');
       setIsEditingProfile(false);
       window.location.reload(); // Refresh navbar avatar
     }
@@ -112,7 +114,7 @@ const Profile = () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus laporan ini?")) {
       const { error } = await supabase.from('lost_items').delete().eq('id', id);
       if (error) {
-        alert("Gagal menghapus laporan: " + error.message);
+        toast.error('Gagal menghapus laporan: ' + error.message);
       } else {
         setMyReports(myReports.filter(report => report.id !== id));
       }
@@ -131,7 +133,7 @@ const Profile = () => {
         .eq('id', id);
         
       if (error) {
-        alert("Gagal memperbarui status: " + error.message);
+        toast.error('Gagal memperbarui status: ' + error.message);
       } else {
         setMyReports(myReports.map(report => 
           report.id === id ? { ...report, status: 'returned' } : report

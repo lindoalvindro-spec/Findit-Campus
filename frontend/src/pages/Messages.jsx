@@ -3,10 +3,12 @@ import Navbar from '../components/Navbar';
 import { supabase } from '../supabaseClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkText } from '../utils/contentFilter';
+import { useToast } from '../components/Toast';
 
 const Messages = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const targetUserId = searchParams.get('userId');
   const contextItemId = searchParams.get('itemId');
 
@@ -27,7 +29,7 @@ const Messages = () => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        alert('Anda harus login untuk menggunakan fitur pesan.');
+        toast.warning('Anda harus login untuk menggunakan fitur pesan.');
         navigate('/auth');
         return;
       }
@@ -232,7 +234,7 @@ const Messages = () => {
     // Content filter check
     const { isClean, flaggedWord } = checkText(msgText);
     if (!isClean) {
-      alert(`⚠️ Pesan Anda mengandung kata yang tidak pantas. Mohon gunakan bahasa yang sopan.`);
+      toast.warning('Pesan Anda mengandung kata yang tidak pantas. Mohon gunakan bahasa yang sopan.', 'Konten Tidak Sesuai');
       setIsSending(false);
       return;
     }
