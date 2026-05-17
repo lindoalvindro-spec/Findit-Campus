@@ -476,17 +476,15 @@ const Messages = () => {
                             <div className="h-0"></div>
                           )}
                         </div>
-                        {/* Delete button on hover (own messages only) */}
-                        {isMe && (
-                          <button
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
-                            title="Hapus pesan"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">delete</span>
-                            Hapus
-                          </button>
-                        )}
+                        {/* Delete button on hover */}
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
+                          title="Hapus pesan"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">delete</span>
+                          Hapus
+                        </button>
                       </div>
                     );
                   })}
