@@ -7,6 +7,7 @@ const Navbar = () => {
   const path = location.pathname;
   const [user, setUser] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     // Check initial session
@@ -15,6 +16,7 @@ const Navbar = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchAvatar(session.user.id);
+        fetchUnreadCount(session.user.id);
       }
     };
     getSession();
@@ -24,8 +26,10 @@ const Navbar = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchAvatar(session.user.id);
+        fetchUnreadCount(session.user.id);
       } else {
         setAvatarUrl('');
+        setUnreadCount(0);
       }
     });
 
@@ -47,6 +51,39 @@ const Navbar = () => {
       console.error("Gagal mengambil avatar:", err);
     }
   };
+
+  const fetchUnreadCount = async (userId) => {
+    const { count, error } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', userId)
+      .eq('is_read', false);
+    
+    if (!error) {
+      setUnreadCount(count || 0);
+    }
+  };
+
+  // Real-time subscription for unread messages
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('navbar-unread')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'messages',
+        filter: `receiver_id=eq.${user.id}`
+      }, () => {
+        fetchUnreadCount(user.id);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const getNavClass = (targetPath) => {
     const isActive = path === targetPath;
@@ -80,7 +117,11 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
               <Link to="/messages" className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 flex items-center justify-center relative" title="Pesan">
                 <span className="material-symbols-outlined text-[24px]">forum</span>
-                {/* You can add an unread badge here later */}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-pulse shadow-md">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
               <Link to="/profile" className="flex items-center active:scale-95 transition-transform" title="Profil Anda">
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant hover:border-primary transition-colors bg-surface-container flex items-center justify-center">
