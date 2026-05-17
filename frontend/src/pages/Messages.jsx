@@ -5,11 +5,13 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkText } from '../utils/contentFilter';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmDialog';
 
 const Messages = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const confirm = useConfirm();
   const targetUserId = searchParams.get('userId');
   const contextItemId = searchParams.get('itemId');
 
@@ -431,10 +433,15 @@ const Messages = () => {
                   </div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface flex-grow">{activeChat.full_name}</h3>
                   <button
-                    onClick={() => {
-                      if (window.confirm('Hapus seluruh percakapan dengan ' + activeChat.full_name + '?')) {
-                        handleDeleteConversation();
-                      }
+                    onClick={async () => {
+                      const yes = await confirm({
+                        title: 'Hapus Percakapan?',
+                        message: `Semua pesan dengan ${activeChat.full_name} akan dihapus secara permanen. Tindakan ini tidak bisa dibatalkan.`,
+                        confirmText: 'Ya, Hapus',
+                        cancelText: 'Batal',
+                        type: 'danger'
+                      });
+                      if (yes) handleDeleteConversation();
                     }}
                     className="p-2 rounded-full text-on-surface-variant hover:text-red-500 hover:bg-red-500/10 transition-colors"
                     title="Hapus percakapan"

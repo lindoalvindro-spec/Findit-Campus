@@ -4,10 +4,12 @@ import Footer from '../components/Footer';
 import { supabase } from '../supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmDialog';
 
 const Profile = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const confirm = useConfirm();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   
@@ -111,22 +113,36 @@ const Profile = () => {
 
   // CRUD Handlers for Reports
   const handleDeleteReport = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus laporan ini?")) {
+    const yes = await confirm({
+      title: 'Hapus Laporan?',
+      message: 'Laporan ini akan dihapus secara permanen beserta semua pesan yang terkait. Tindakan ini tidak bisa dibatalkan.',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      type: 'danger'
+    });
+    if (yes) {
       const { error } = await supabase.from('lost_items').delete().eq('id', id);
       if (error) {
         toast.error('Gagal menghapus laporan: ' + error.message);
       } else {
         setMyReports(myReports.filter(report => report.id !== id));
+        toast.success('Laporan berhasil dihapus.', 'Dihapus');
       }
     }
   };
 
   const handleResolveReport = async (id, currentStatus) => {
-    const confirmMessage = currentStatus === 'lost' 
-      ? "Tandai barang ini sudah ditemukan/selesai?" 
-      : "Tandai barang temuan ini sudah dikembalikan?";
-      
-    if (window.confirm(confirmMessage)) {
+    const isLost = currentStatus === 'lost';
+    const yes = await confirm({
+      title: isLost ? 'Tandai Selesai?' : 'Sudah Dikembalikan?',
+      message: isLost
+        ? 'Apakah barang ini sudah ditemukan dan diselesaikan?'
+        : 'Apakah barang temuan ini sudah dikembalikan ke pemiliknya?',
+      confirmText: 'Ya, Konfirmasi',
+      cancelText: 'Batal',
+      type: 'info'
+    });
+    if (yes) {
       const { error } = await supabase
         .from('lost_items')
         .update({ status: 'returned' })
@@ -138,6 +154,7 @@ const Profile = () => {
         setMyReports(myReports.map(report => 
           report.id === id ? { ...report, status: 'returned' } : report
         ));
+        toast.success('Status berhasil diperbarui!', 'Diperbarui');
       }
     }
   };
