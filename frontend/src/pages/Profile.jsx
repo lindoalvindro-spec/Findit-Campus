@@ -276,7 +276,7 @@ const Profile = () => {
                   <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl text-center flex flex-col items-center">
                     <span className="material-symbols-outlined text-[64px] text-outline opacity-50 mb-4">post_add</span>
                     <h3 className="font-headline-sm text-on-surface mb-2">Belum Ada Laporan</h3>
-                    <p className="text-on-surface-variant mb-6 max-w-md">Anda belum membuat laporan kehilangan atau penemuan barang apa pun.</p>
+                    <p className="text-on-surface-variant mb-6 w-full px-4">Anda belum membuat laporan kehilangan atau penemuan barang apa pun.</p>
                     <Link to="/create-report" className="bg-primary text-on-primary px-lg py-sm rounded-full font-label-md hover:bg-primary/90 transition-colors">Buat Laporan Pertama</Link>
                   </div>
                 ) : (
@@ -361,7 +361,7 @@ const Profile = () => {
               <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-xl text-center flex flex-col items-center">
                 <span className="material-symbols-outlined text-[64px] text-outline opacity-50 mb-4">history</span>
                 <h3 className="font-headline-sm text-on-surface mb-2">Belum Ada Aktivitas</h3>
-                <p className="text-on-surface-variant max-w-md">Fitur riwayat aktivitas akan segera hadir di pembaruan selanjutnya.</p>
+                <p className="text-on-surface-variant w-full px-4">Fitur riwayat aktivitas akan segera hadir di pembaruan selanjutnya.</p>
               </div>
             )}
           </div>
