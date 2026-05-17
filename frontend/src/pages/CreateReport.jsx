@@ -3,6 +3,8 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { supabase } from '../supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { checkText } from '../utils/contentFilter';
+import { checkImage } from '../utils/nsfwCheck';
 
 const CreateReport = () => {
   const navigate = useNavigate();
@@ -75,7 +77,7 @@ const CreateReport = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -83,8 +85,21 @@ const CreateReport = () => {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, imageUrl: reader.result });
+      reader.onloadend = async () => {
+        const dataUrl = reader.result;
+
+        // NSFW Check
+        setLoading(true);
+        const { isSafe, reason } = await checkImage(dataUrl);
+        setLoading(false);
+
+        if (!isSafe) {
+          alert(`🚫 Foto ditolak: ${reason} Silakan gunakan foto yang sesuai.`);
+          e.target.value = ''; // Reset file input
+          return;
+        }
+
+        setFormData({ ...formData, imageUrl: dataUrl });
       };
       reader.readAsDataURL(file);
     }
@@ -99,6 +114,20 @@ const CreateReport = () => {
     }
     
     setLoading(true);
+
+    // Content filter check for title and description
+    const titleCheck = checkText(formData.item_name);
+    if (!titleCheck.isClean) {
+      alert('⚠️ Judul laporan mengandung kata yang tidak pantas. Mohon ubah judul Anda.');
+      setLoading(false);
+      return;
+    }
+    const descCheck = checkText(formData.description);
+    if (!descCheck.isClean) {
+      alert('⚠️ Deskripsi laporan mengandung kata yang tidak pantas. Mohon ubah deskripsi Anda.');
+      setLoading(false);
+      return;
+    }
     
     const payload = {
       title: formData.item_name,

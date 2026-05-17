@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { supabase } from '../supabaseClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { checkText } from '../utils/contentFilter';
 
 const Messages = () => {
   const [searchParams] = useSearchParams();
@@ -227,6 +228,15 @@ const Messages = () => {
     setIsSending(true);
 
     const msgText = newMessage.trim();
+
+    // Content filter check
+    const { isClean, flaggedWord } = checkText(msgText);
+    if (!isClean) {
+      alert(`⚠️ Pesan Anda mengandung kata yang tidak pantas. Mohon gunakan bahasa yang sopan.`);
+      setIsSending(false);
+      return;
+    }
+
     setNewMessage(''); // optimistic clear
     broadcastStopTyping();
 
