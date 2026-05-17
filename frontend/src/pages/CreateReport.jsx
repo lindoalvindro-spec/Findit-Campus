@@ -3,7 +3,6 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { supabase } from '../supabaseClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { checkText } from '../utils/contentFilter';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 
@@ -116,20 +115,6 @@ const CreateReport = () => {
     }
     
     setLoading(true);
-
-    // Content filter check for title and description
-    const titleCheck = checkText(formData.item_name);
-    if (!titleCheck.isClean) {
-      toast.warning('Judul laporan mengandung kata yang tidak pantas. Mohon ubah judul Anda.', 'Konten Tidak Sesuai');
-      setLoading(false);
-      return;
-    }
-    const descCheck = checkText(formData.description);
-    if (!descCheck.isClean) {
-      toast.warning('Deskripsi laporan mengandung kata yang tidak pantas. Mohon ubah deskripsi Anda.', 'Konten Tidak Sesuai');
-      setLoading(false);
-      return;
-    }
     
     const payload = {
       title: formData.item_name,

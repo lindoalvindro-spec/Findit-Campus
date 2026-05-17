@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { supabase } from '../supabaseClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { checkText } from '../utils/contentFilter';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
@@ -236,14 +235,6 @@ const Messages = () => {
     setIsSending(true);
 
     const msgText = newMessage.trim();
-
-    // Content filter check
-    const { isClean, flaggedWord } = checkText(msgText);
-    if (!isClean) {
-      toast.warning('Pesan Anda mengandung kata yang tidak pantas. Mohon gunakan bahasa yang sopan.', 'Konten Tidak Sesuai');
-      setIsSending(false);
-      return;
-    }
 
     setNewMessage('');
     const sentImage = imagePreview;
