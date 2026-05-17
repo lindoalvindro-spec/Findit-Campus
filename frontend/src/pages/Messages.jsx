@@ -282,6 +282,35 @@ const Messages = () => {
     setTimeout(() => setIsSending(false), 500);
   };
 
+  const handleDeleteMessage = async (msgId) => {
+    const { error } = await supabase.from('messages').delete().eq('id', msgId);
+    if (!error) {
+      setMessages(prev => prev.filter(m => m.id !== msgId));
+      fetchConversations(user.id);
+      toast.success('Pesan berhasil dihapus.', 'Dihapus');
+    } else {
+      toast.error('Gagal menghapus pesan: ' + error.message);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!activeChat || !user) return;
+
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeChat.id}),and(sender_id.eq.${activeChat.id},receiver_id.eq.${user.id})`);
+
+    if (!error) {
+      setMessages([]);
+      setActiveChat(null);
+      fetchConversations(user.id);
+      toast.success('Seluruh percakapan berhasil dihapus.', 'Dihapus');
+    } else {
+      toast.error('Gagal menghapus percakapan: ' + error.message);
+    }
+  };
+
   const handleImageSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -400,7 +429,18 @@ const Messages = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface">{activeChat.full_name}</h3>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface flex-grow">{activeChat.full_name}</h3>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Hapus seluruh percakapan dengan ' + activeChat.full_name + '?')) {
+                        handleDeleteConversation();
+                      }
+                    }}
+                    className="p-2 rounded-full text-on-surface-variant hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                    title="Hapus percakapan"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                  </button>
                 </div>
 
                 {/* Messages Area */}
@@ -410,7 +450,7 @@ const Messages = () => {
                     const showTime = idx === 0 || new Date(msg.created_at) - new Date(messages[idx-1].created_at) > 300000; // 5 min gap
                     
                     return (
-                      <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                      <div key={msg.id} className={`group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                         {showTime && (
                           <span className="text-[11px] text-on-surface-variant mb-2 mt-4 mx-2">
                             {new Date(msg.created_at).toLocaleString('id-ID', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -438,6 +478,17 @@ const Messages = () => {
                             <div className="h-0"></div>
                           )}
                         </div>
+                        {/* Delete button on hover (own messages only) */}
+                        {isMe && (
+                          <button
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
+                            title="Hapus pesan"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">delete</span>
+                            Hapus
+                          </button>
+                        )}
                       </div>
                     );
                   })}

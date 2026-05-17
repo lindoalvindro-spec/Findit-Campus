@@ -52,3 +52,4 @@ CREATE POLICY "Users can delete own items" ON lost_items FOR DELETE USING (auth.
 CREATE POLICY "Users can view their own messages" ON messages FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
 CREATE POLICY "Users can insert messages as themselves" ON messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 CREATE POLICY "Users can update received messages" ON messages FOR UPDATE USING (auth.uid() = receiver_id);
+CREATE POLICY "Users can delete own messages" ON messages FOR DELETE USING (auth.uid() = sender_id);
