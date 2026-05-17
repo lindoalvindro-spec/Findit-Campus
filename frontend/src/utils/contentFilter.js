@@ -41,12 +41,7 @@ const BLOCKED_WORDS = [
   'idiot', 'idiod', 'idyot',
   'bodoh', 'bodo', 'bodho',
 
-  // Binatang sbg umpatan
-  'anjing', 'anjg', 'anjir', 'anjrit', 'anjiir', 'anjay', 'anying',
-  'ajg', 'ajig', 'ajigile', 'nganjing',
-  'babi', 'bby', 'babii', 'bbo',
-  'monyet', 'monyed', 'mnyet', 'monyong',
-  'asu', 'asw', 'asyu', 'asuu',
+  // Binatang sbg umpatan — DIHAPUS karena user mungkin melaporkan hewan peliharaan hilang
 
   // Jawa kasar
   'jancok', 'jancuk', 'jangkrik', 'jnck', 'jancog', 'jancik',
