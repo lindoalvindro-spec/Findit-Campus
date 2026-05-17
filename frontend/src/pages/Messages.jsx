@@ -211,8 +211,13 @@ const Messages = () => {
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    }, 50);
   };
+
+  // Auto-scroll when messages change or typing indicator shows
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isOtherTyping]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
