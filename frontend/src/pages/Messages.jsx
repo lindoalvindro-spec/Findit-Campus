@@ -15,7 +15,10 @@ const Messages = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const typingChannelRef = useRef(null);
 
   // Initialize and check auth
   useEffect(() => {
@@ -88,6 +91,7 @@ const Messages = () => {
 
     if (otherUserData) {
       setActiveChat(otherUserData);
+      setIsOtherTyping(false);
       fetchMessages(currentUserId, otherId);
       
       // Mark messages as read
@@ -143,6 +147,67 @@ const Messages = () => {
     };
   }, [user, activeChat]);
 
+  // Typing indicator via Supabase Broadcast
+  useEffect(() => {
+    if (!user || !activeChat) {
+      // Cleanup old channel
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+        typingChannelRef.current = null;
+      }
+      return;
+    }
+
+    // Create a unique room for this pair (sorted IDs so both users join the same room)
+    const roomIds = [user.id, activeChat.id].sort().join('-');
+    const channelName = `typing:${roomIds}`;
+
+    const channel = supabase
+      .channel(channelName)
+      .on('broadcast', { event: 'typing' }, (payload) => {
+        if (payload.payload.userId !== user.id) {
+          setIsOtherTyping(true);
+          // Auto-hide after 2.5 seconds of no typing event
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setIsOtherTyping(false), 2500);
+        }
+      })
+      .on('broadcast', { event: 'stop_typing' }, (payload) => {
+        if (payload.payload.userId !== user.id) {
+          setIsOtherTyping(false);
+        }
+      })
+      .subscribe();
+
+    typingChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      typingChannelRef.current = null;
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [user, activeChat]);
+
+  const broadcastTyping = () => {
+    if (typingChannelRef.current && user) {
+      typingChannelRef.current.send({
+        type: 'broadcast',
+        event: 'typing',
+        payload: { userId: user.id }
+      });
+    }
+  };
+
+  const broadcastStopTyping = () => {
+    if (typingChannelRef.current && user) {
+      typingChannelRef.current.send({
+        type: 'broadcast',
+        event: 'stop_typing',
+        payload: { userId: user.id }
+      });
+    }
+  };
+
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -155,6 +220,7 @@ const Messages = () => {
 
     const msgText = newMessage.trim();
     setNewMessage(''); // optimistic clear
+    broadcastStopTyping();
 
     // Optimistic UI update
     const optimisticMsg = {
@@ -300,6 +366,16 @@ const Messages = () => {
                       </div>
                     );
                   })}
+                  {isOtherTyping && (
+                    <div className="flex flex-col items-start">
+                      <div className="bg-surface-variant rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1">
+                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      </div>
+                      <span className="text-[10px] text-on-surface-variant mt-1 ml-1">sedang mengetik...</span>
+                    </div>
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
@@ -309,7 +385,14 @@ const Messages = () => {
                     <input
                       type="text"
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={(e) => {
+                        setNewMessage(e.target.value);
+                        if (e.target.value.trim()) {
+                          broadcastTyping();
+                        } else {
+                          broadcastStopTyping();
+                        }
+                      }}
                       placeholder="Ketik pesan..."
                       className="flex-grow bg-surface-variant border-none rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-primary text-body-md text-on-surface"
                     />
