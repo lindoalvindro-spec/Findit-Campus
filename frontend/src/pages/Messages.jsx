@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import { supabase } from '../supabaseClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkText } from '../utils/contentFilter';
+import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 
 const Messages = () => {
@@ -20,10 +21,12 @@ const Messages = () => {
   const [loading, setLoading] = useState(true);
   const [isOtherTyping, setIsOtherTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const typingChannelRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isCheckingImage, setIsCheckingImage] = useState(false);
 
   // Initialize and check auth
   useEffect(() => {
@@ -226,7 +229,7 @@ const Messages = () => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeChat || !user || isSending) return;
+    if ((!newMessage.trim() && !imagePreview) || !activeChat || !user || isSending) return;
 
     setIsSending(true);
 
@@ -240,7 +243,9 @@ const Messages = () => {
       return;
     }
 
-    setNewMessage(''); // optimistic clear
+    setNewMessage('');
+    const sentImage = imagePreview;
+    setImagePreview(null);
     broadcastStopTyping();
 
     // Optimistic UI update
@@ -248,7 +253,8 @@ const Messages = () => {
       id: Date.now().toString(),
       sender_id: user.id,
       receiver_id: activeChat.id,
-      content: msgText,
+      content: msgText || (sentImage ? '📷 Foto' : ''),
+      image_url: sentImage || null,
       created_at: new Date().toISOString(),
       item_id: contextItemId || null
     };
@@ -260,7 +266,8 @@ const Messages = () => {
       .insert([{
         sender_id: user.id,
         receiver_id: activeChat.id,
-        content: msgText,
+        content: msgText || (sentImage ? '📷 Foto' : ''),
+        image_url: sentImage || null,
         item_id: contextItemId || null
       }]);
 
@@ -275,23 +282,35 @@ const Messages = () => {
     setTimeout(() => setIsSending(false), 500);
   };
 
-  const handleDeleteConversation = async () => {
-    if (!user || !activeChat) return;
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    const { error } = await supabase
-      .from('messages')
-      .delete()
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeChat.id}),and(sender_id.eq.${activeChat.id},receiver_id.eq.${user.id})`);
-
-    if (error) {
-      toast.error('Gagal menghapus percakapan: ' + error.message);
-    } else {
-      toast.success('Percakapan berhasil dihapus.');
-      setMessages([]);
-      setActiveChat(null);
-      setShowDeleteConfirm(false);
-      fetchConversations(user.id);
+    if (file.size > 10 * 1024 * 1024) {
+      toast.warning('Ukuran file terlalu besar. Maksimal 10MB.');
+      e.target.value = '';
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const dataUrl = reader.result;
+
+      // NSFW Check
+      setIsCheckingImage(true);
+      const { isSafe, reason } = await checkImage(dataUrl);
+      setIsCheckingImage(false);
+
+      if (!isSafe) {
+        toast.error(`Foto ditolak: ${reason}`, 'Konten Tidak Sesuai');
+        e.target.value = '';
+        return;
+      }
+
+      setImagePreview(dataUrl);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset so same file can be re-selected
   };
 
   if (loading) {
@@ -308,41 +327,6 @@ const Messages = () => {
   return (
     <div className="bg-background font-body-md h-screen flex flex-col overflow-hidden">
       <Navbar />
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
-          <div className="relative bg-surface rounded-2xl border border-outline-variant shadow-2xl w-full max-w-[400px] overflow-hidden animate-toast-enter">
-            {/* Header */}
-            <div className="p-6 pb-2 flex flex-col items-center text-center">
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                <span className="material-symbols-outlined text-red-500 text-[28px]">delete_forever</span>
-              </div>
-              <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Hapus Percakapan?</h3>
-              <p className="text-on-surface-variant text-sm leading-relaxed">
-                Semua pesan dengan <strong>{activeChat?.full_name}</strong> akan dihapus secara permanen dan tidak dapat dikembalikan.
-              </p>
-            </div>
-            {/* Actions */}
-            <div className="p-4 pt-6 flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-outline-variant text-on-surface font-label-md hover:bg-surface-container-low transition-colors"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleDeleteConversation}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-red-500 text-white font-label-md hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">delete</span>
-                Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       <main className="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-md md:py-lg flex overflow-hidden h-full">
         <div className="flex w-full bg-surface rounded-2xl border border-outline-variant shadow-sm overflow-hidden h-[calc(100vh-140px)]">
@@ -416,14 +400,7 @@ const Messages = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface flex-grow">{activeChat.full_name}</h3>
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="p-2 rounded-full text-on-surface-variant hover:text-red-500 hover:bg-red-50 transition-colors"
-                    title="Hapus percakapan"
-                  >
-                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface">{activeChat.full_name}</h3>
                 </div>
 
                 {/* Messages Area */}
@@ -440,13 +417,26 @@ const Messages = () => {
                           </span>
                         )}
                         <div 
-                          className={`max-w-[75%] px-4 py-2 rounded-2xl ${
+                          className={`max-w-[75%] rounded-2xl overflow-hidden ${
                             isMe 
                               ? 'bg-primary text-on-primary rounded-tr-sm' 
                               : 'bg-surface-variant text-on-surface-variant rounded-tl-sm'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap word-break">{msg.content}</p>
+                          {msg.image_url && (
+                            <img 
+                              src={msg.image_url} 
+                              alt="Foto" 
+                              className="w-full max-w-[280px] object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                              onClick={() => window.open(msg.image_url, '_blank')}
+                            />
+                          )}
+                          {msg.content && msg.content !== '📷 Foto' && (
+                            <p className="whitespace-pre-wrap word-break px-4 py-2">{msg.content}</p>
+                          )}
+                          {msg.image_url && !msg.content && (
+                            <div className="h-0"></div>
+                          )}
                         </div>
                       </div>
                     );
@@ -466,7 +456,43 @@ const Messages = () => {
 
                 {/* Input Area */}
                 <div className="p-4 bg-surface border-t border-outline-variant">
-                  <form onSubmit={handleSendMessage} className="flex gap-2">
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mb-3 relative inline-block">
+                      <img src={imagePreview} alt="Preview" className="h-24 rounded-lg border border-outline-variant shadow-sm object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setImagePreview(null)}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">close</span>
+                      </button>
+                    </div>
+                  )}
+                  {/* Checking Image Indicator */}
+                  {isCheckingImage && (
+                    <div className="mb-3 flex items-center gap-2 text-sm text-on-surface-variant">
+                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                      Memeriksa keamanan foto...
+                    </div>
+                  )}
+                  <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
+                    <input
+                      type="file"
+                      ref={imageInputRef}
+                      onChange={handleImageSelect}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={isSending || isCheckingImage}
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant hover:text-primary transition-colors disabled:opacity-50 flex-shrink-0"
+                      title="Kirim foto"
+                    >
+                      <span className="material-symbols-outlined text-[24px]">image</span>
+                    </button>
                     <input
                       type="text"
                       value={newMessage}
@@ -483,8 +509,8 @@ const Messages = () => {
                     />
                     <button 
                       type="submit"
-                      disabled={!newMessage.trim() || isSending}
-                      className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center disabled:opacity-50 disabled:bg-surface-variant disabled:text-outline hover:bg-primary-container hover:text-on-primary-container transition-colors transform active:scale-95"
+                      disabled={(!newMessage.trim() && !imagePreview) || isSending}
+                      className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center disabled:opacity-50 disabled:bg-surface-variant disabled:text-outline hover:bg-primary-container hover:text-on-primary-container transition-colors transform active:scale-95 flex-shrink-0"
                     >
                       <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
                     </button>

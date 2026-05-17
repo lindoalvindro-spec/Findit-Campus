@@ -25,6 +25,7 @@ CREATE TABLE messages (
   receiver_id UUID REFERENCES users(id),
   item_id UUID REFERENCES lost_items(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
+  image_url TEXT,
   is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
