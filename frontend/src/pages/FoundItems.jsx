@@ -13,6 +13,8 @@ const FoundItems = () => {
   
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 7;
   
   // Perbarui parameter URL ketika searchQuery berubah
   useEffect(() => {
@@ -49,6 +51,17 @@ const FoundItems = () => {
     
     return matchQuery && matchCategory;
   });
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when search/filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter]);
 
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
@@ -125,7 +138,7 @@ const FoundItems = () => {
               <p className="mb-8">Tidak ada barang yang cocok dengan pencarian Anda.</p>
             </div>
           ) : (
-            filteredItems.map((item) => (
+            paginatedItems.map((item) => (
               <Link key={item.id} to={`/item-detail?id=${item.id}`} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col group">
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-variant flex items-center justify-center">
                   {item.image_url ? (
@@ -159,28 +172,42 @@ const FoundItems = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center items-center mt-xl py-md">
-          <nav aria-label="Pagination" className="flex items-center gap-2">
-            <button className="p-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-              <span className="material-symbols-outlined text-sm">chevron_left</span>
-              <span className="sr-only">Previous</span>
-            </button>
-            <div className="items-center gap-1 hidden sm:flex">
-              <button aria-current="page" className="w-10 h-10 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md flex items-center justify-center">1</button>
-              <button className="w-10 h-10 rounded-lg text-on-surface hover:bg-surface-variant font-label-md text-label-md flex items-center justify-center transition-colors">2</button>
-              <button className="w-10 h-10 rounded-lg text-on-surface hover:bg-surface-variant font-label-md text-label-md flex items-center justify-center transition-colors">3</button>
-              <span className="px-2 text-on-surface-variant">...</span>
-              <button className="w-10 h-10 rounded-lg text-on-surface hover:bg-surface-variant font-label-md text-label-md flex items-center justify-center transition-colors">8</button>
-            </div>
-            <div className="sm:hidden text-body-sm font-body-sm text-on-surface-variant">
-              Halaman 1 dari 8
-            </div>
-            <button className="p-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors">
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
-              <span className="sr-only">Next</span>
-            </button>
-          </nav>
-        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-xl py-md">
+            <nav aria-label="Pagination" className="flex items-center gap-2">
+              <button 
+                onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                  <button 
+                    key={page}
+                    onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    aria-current={currentPage === page ? 'page' : undefined}
+                    className={`w-10 h-10 rounded-lg font-label-md text-label-md flex items-center justify-center transition-colors ${
+                      currentPage === page 
+                        ? 'bg-secondary text-on-secondary' 
+                        : 'text-on-surface hover:bg-surface-variant'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button 
+                onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </nav>
+          </div>
+        )}
       </main>
 
       <Footer />
