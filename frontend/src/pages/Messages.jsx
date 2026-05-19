@@ -5,7 +5,26 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
+import { useConfirm } from '../components/ConfirmDialog';
 
+const formatLastSeen = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMinutes = Math.floor((now - date) / 60000);
+  
+  if (diffMinutes < 1) return 'Online';
+  
+  const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  const timeStr = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  
+  if (isToday) return `Terakhir dilihat hari ini pukul ${timeStr}`;
+  
+  const isYesterday = new Date(now.setDate(now.getDate() - 1)).getDate() === date.getDate();
+  if (isYesterday) return `Terakhir dilihat kemarin pukul ${timeStr}`;
+  
+  return `Terakhir dilihat ${date.toLocaleDateString('id-ID')} ${timeStr}`;
+};
 const Messages = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -52,8 +71,8 @@ const Messages = () => {
       .from('messages')
       .select(`
         *,
-        sender:users!messages_sender_id_fkey(id, full_name, avatar_url),
-        receiver:users!messages_receiver_id_fkey(id, full_name, avatar_url)
+        sender:users!messages_sender_id_fkey(id, full_name, avatar_url, last_seen),
+        receiver:users!messages_receiver_id_fkey(id, full_name, avatar_url, last_seen)
       `)
       .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
       .order('created_at', { ascending: false });
@@ -94,7 +113,7 @@ const Messages = () => {
     
     // If not, fetch their details from DB (new chat)
     if (!otherUserData) {
-      const { data } = await supabase.from('users').select('id, full_name, avatar_url').eq('id', otherId).single();
+      const { data } = await supabase.from('users').select('id, full_name, avatar_url, last_seen').eq('id', otherId).single();
       if (data) otherUserData = data;
     }
 
@@ -148,6 +167,50 @@ const Messages = () => {
           // Otherwise, just refresh conversations to show new unread
           fetchConversations(user.id);
         }
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages',
+        filter: `sender_id=eq.${user.id}`
+      }, (payload) => {
+        const updatedMsg = payload.new;
+        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, activeChat]);
+
+  // Update current user's last_seen
+  useEffect(() => {
+    if (!user) return;
+    
+    const updateLastSeen = async () => {
+      await supabase.from('users').update({ last_seen: new Date().toISOString() }).eq('id', user.id);
+    };
+
+    updateLastSeen(); // Initial update
+    const interval = setInterval(updateLastSeen, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Listen to activeChat's last_seen updates
+  useEffect(() => {
+    if (!user || !activeChat) return;
+
+    const channel = supabase
+      .channel('public:users')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'users',
+        filter: `id=eq.${activeChat.id}`
+      }, (payload) => {
+        setActiveChat(prev => ({ ...prev, last_seen: payload.new.last_seen }));
       })
       .subscribe();
 
@@ -422,7 +485,16 @@ const Messages = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface flex-grow">{activeChat.full_name}</h3>
+                  <div className="flex flex-col flex-grow">
+                    <h3 className="font-headline-sm text-headline-sm text-on-surface leading-tight">{activeChat.full_name}</h3>
+                    <span className="text-[11px] text-on-surface-variant font-medium">
+                      {isOtherTyping ? (
+                        <span className="text-primary italic">Sedang mengetik...</span>
+                      ) : (
+                        formatLastSeen(activeChat.last_seen)
+                      )}
+                    </span>
+                  </div>
                   <button
                     onClick={async () => {
                       const yes = await confirm({
@@ -476,15 +548,29 @@ const Messages = () => {
                             <div className="h-0"></div>
                           )}
                         </div>
-                        {/* Delete button on hover */}
-                        <button
-                          onClick={() => handleDeleteMessage(msg.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
-                          title="Hapus pesan"
-                        >
-                          <span className="material-symbols-outlined text-[14px]">delete</span>
-                          Hapus
-                        </button>
+                        
+                        <div className="flex items-center gap-2 mt-1">
+                          {/* Read receipt checkmarks (only for own messages) */}
+                          {isMe && (
+                            <span 
+                              className="material-symbols-outlined text-[14px]"
+                              style={{ color: msg.is_read ? '#0ea5e9' : '#94a3b8' }}
+                              title={msg.is_read ? "Dibaca" : "Terkirim"}
+                            >
+                              {msg.is_read ? 'done_all' : 'done'}
+                            </span>
+                          )}
+                          
+                          {/* Delete button on hover */}
+                          <button
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
+                            title="Hapus pesan"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">delete</span>
+                            Hapus
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
