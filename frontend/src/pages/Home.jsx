@@ -71,7 +71,7 @@ const Home = () => {
           total,
           lost,
           returned,
-          successRate: total > 0 ? successRate : 100 // Default to 100% if no reports yet
+          successRate // Default to 0% if no reports yet
         });
       } catch (err) {
         console.error("Gagal memuat statistik database:", err);
