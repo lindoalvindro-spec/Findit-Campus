@@ -5,6 +5,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const formatLastSeen = (dateString) => {
   if (!dateString) return '';
@@ -427,9 +428,19 @@ const Messages = () => {
     return (
       <div className="bg-background min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex-grow flex items-center justify-center"
+        >
+          <motion.span 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="material-symbols-outlined text-4xl text-primary"
+          >
+            progress_activity
+          </motion.span>
+        </motion.div>
       </div>
     );
   }
@@ -443,48 +454,98 @@ const Messages = () => {
           
           {/* Sidebar / Conversations List */}
           <div className={`${activeChat ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-[320px] lg:w-[380px] border-r border-outline-variant bg-surface-container-lowest`}>
-            <div className="p-4 border-b border-outline-variant bg-surface">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 border-b border-outline-variant bg-surface"
+            >
               <h2 className="font-headline-sm text-headline-sm text-on-surface">Pesan</h2>
-            </div>
+            </motion.div>
             
             <div className="flex-grow overflow-y-auto">
               {conversations.length === 0 ? (
-                <div className="p-6 text-center text-on-surface-variant flex flex-col items-center justify-center h-full">
-                  <span className="material-symbols-outlined text-[48px] opacity-20 mb-2">forum</span>
-                  <p>Belum ada percakapan.</p>
-                </div>
-              ) : (
-                conversations.map((conv) => (
-                  <button 
-                    key={conv.user.id}
-                    onClick={() => openChatWithUser(conv.user.id)}
-                    className={`w-full text-left p-4 flex items-center gap-3 border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors ${activeChat?.id === conv.user.id ? 'bg-primary-fixed-dim/20' : ''}`}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="p-6 text-center text-on-surface-variant flex flex-col items-center justify-center h-full"
+                >
+                  <motion.span 
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="material-symbols-outlined text-[48px] opacity-20 mb-2"
                   >
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
-                      {conv.user.avatar_url ? (
-                        <img src={conv.user.avatar_url} alt={conv.user.full_name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-on-surface-variant font-headline-sm">
-                          {conv.user.full_name?.charAt(0).toUpperCase()}
+                    forum
+                  </motion.span>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    Belum ada percakapan.
+                  </motion.p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    visible: {
+                      transition: {
+                        staggerChildren: 0.05
+                      }
+                    }
+                  }}
+                >
+                  {conversations.map((conv) => (
+                    <motion.button
+                      key={conv.user.id}
+                      variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        visible: { opacity: 1, x: 0 }
+                      }}
+                      whileHover={{ x: 4, backgroundColor: 'rgba(0,0,0,0.02)' }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => openChatWithUser(conv.user.id)}
+                      className={`w-full text-left p-4 flex items-center gap-3 border-b border-outline-variant/50 transition-colors ${activeChat?.id === conv.user.id ? 'bg-primary-fixed-dim/20' : ''}`}
+                    >
+                      <motion.div 
+                        whileHover={{ scale: 1.1 }}
+                        className="w-12 h-12 rounded-full overflow-hidden bg-surface-variant flex-shrink-0"
+                      >
+                        {conv.user.avatar_url ? (
+                          <img src={conv.user.avatar_url} alt={conv.user.full_name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-on-surface-variant font-headline-sm">
+                            {conv.user.full_name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </motion.div>
+                      <div className="flex-grow min-w-0">
+                        <div className="flex justify-between items-baseline mb-1">
+                          <h3 className={`font-label-md text-label-md truncate ${conv.unread ? 'font-bold text-on-surface' : 'text-on-surface'}`}>{conv.user.full_name}</h3>
+                          <span className="text-[10px] text-on-surface-variant flex-shrink-0 ml-2">
+                            {new Date(conv.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className={`font-label-md text-label-md truncate ${conv.unread ? 'font-bold text-on-surface' : 'text-on-surface'}`}>{conv.user.full_name}</h3>
-                        <span className="text-[10px] text-on-surface-variant flex-shrink-0 ml-2">
-                          {new Date(conv.time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                        <p className={`text-sm truncate ${conv.unread ? 'font-bold text-primary' : 'text-on-surface-variant'}`}>
+                          {conv.lastMessage}
+                        </p>
                       </div>
-                      <p className={`text-sm truncate ${conv.unread ? 'font-bold text-primary' : 'text-on-surface-variant'}`}>
-                        {conv.lastMessage}
-                      </p>
-                    </div>
-                    {conv.unread && (
-                      <div className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"></div>
-                    )}
-                  </button>
-                ))
+                      {conv.unread && (
+                        <motion.div 
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 500 }}
+                          className="w-2.5 h-2.5 rounded-full bg-primary flex-shrink-0"
+                          style={{
+                            boxShadow: '0 0 8px rgba(var(--primary-rgb, 103, 80, 164), 0.6)'
+                          }}
+                        />
+                      )}
+                    </motion.button>
+                  ))}
+                </motion.div>
               )}
             </div>
           </div>
@@ -494,14 +555,26 @@ const Messages = () => {
             {activeChat ? (
               <>
                 {/* Chat Header */}
-                <div className="h-[72px] p-4 border-b border-outline-variant flex items-center gap-3 bg-surface z-10 shadow-sm">
-                  <button 
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-[72px] p-4 border-b border-outline-variant flex items-center gap-3 bg-surface z-10 shadow-sm"
+                >
+                  <motion.button 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setActiveChat(null)}
                     className="md:hidden p-2 -ml-2 rounded-full text-on-surface hover:bg-surface-variant"
                   >
                     <span className="material-symbols-outlined">arrow_back</span>
-                  </button>
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+                  </motion.button>
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="w-10 h-10 rounded-full overflow-hidden bg-surface-variant flex-shrink-0"
+                  >
                     {activeChat.avatar_url ? (
                       <img src={activeChat.avatar_url} alt={activeChat.full_name} className="w-full h-full object-cover" />
                     ) : (
@@ -509,18 +582,41 @@ const Messages = () => {
                         {activeChat.full_name?.charAt(0).toUpperCase()}
                       </div>
                     )}
-                  </div>
-                  <div className="flex flex-col flex-grow">
+                  </motion.div>
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="flex flex-col flex-grow"
+                  >
                     <h3 className="font-headline-sm text-headline-sm text-on-surface leading-tight">{activeChat.full_name}</h3>
-                    <span className="text-[11px] text-on-surface-variant font-medium">
+                    <AnimatePresence mode="wait">
                       {isOtherTyping ? (
-                        <span className="text-primary italic">Sedang mengetik...</span>
+                        <motion.span
+                          key="typing"
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          className="text-[11px] text-primary italic font-medium"
+                        >
+                          Sedang mengetik...
+                        </motion.span>
                       ) : (
-                        formatLastSeen(activeChat.last_seen)
+                        <motion.span
+                          key="lastseen"
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          className="text-[11px] text-on-surface-variant font-medium"
+                        >
+                          {formatLastSeen(activeChat.last_seen)}
+                        </motion.span>
                       )}
-                    </span>
-                  </div>
-                  <button
+                    </AnimatePresence>
+                  </motion.div>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={async () => {
                       const yes = await confirm({
                         title: 'Hapus Percakapan?',
@@ -535,112 +631,205 @@ const Messages = () => {
                     title="Hapus percakapan"
                   >
                     <span className="material-symbols-outlined text-[20px]">delete</span>
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
 
                 {/* Messages Area */}
                 <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-surface-container-lowest">
-                  {messages.map((msg, idx) => {
-                    const isMe = msg.sender_id === user.id;
-                    const showTime = idx === 0 || new Date(msg.created_at) - new Date(messages[idx-1].created_at) > 300000; // 5 min gap
-                    
-                    return (
-                      <div key={msg.id} className={`group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                        {showTime && (
-                          <div className="w-full flex justify-center my-4">
-                            <span className="text-[11px] bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full font-medium shadow-sm">
-                              {new Date(msg.created_at).toLocaleString('id-ID', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-                        )}
-                        <div 
-                          className={`max-w-[75%] rounded-2xl overflow-hidden ${
-                            isMe 
-                              ? 'bg-primary text-on-primary rounded-tr-sm' 
-                              : 'bg-surface-variant text-on-surface-variant rounded-tl-sm'
-                          }`}
-                        >
-                          {msg.image_url && (
-                            <img 
-                              src={msg.image_url} 
-                              alt="Foto" 
-                              className="w-full max-w-[280px] object-cover cursor-pointer hover:opacity-90 transition-opacity" 
-                              onClick={() => window.open(msg.image_url, '_blank')}
-                            />
-                          )}
-                          {msg.content && msg.content !== '📷 Foto' && (
-                            <p className="whitespace-pre-wrap word-break px-4 pt-2 pb-1">{msg.content}</p>
-                          )}
-                          {msg.image_url && !msg.content && (
-                            <div className="h-0"></div>
-                          )}
-                          
-                          {/* Time and Checkmarks inside bubble */}
-                          <div className={`flex items-center justify-end gap-1 px-3 pb-1.5 ${isMe ? 'text-white/80' : 'text-on-surface-variant/80'}`}>
-                            <span className="text-[10px]">
-                              {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                            {isMe && (
-                              <span 
-                                className="material-symbols-outlined text-[14px]"
-                                style={{ color: msg.is_read ? '#38bdf8' : 'currentColor' }}
-                                title={msg.is_read ? "Dibaca" : "Terkirim"}
-                              >
-                                {msg.is_read ? 'done_all' : 'done'}
+                  <AnimatePresence initial={false}>
+                    {messages.map((msg, idx) => {
+                      const isMe = msg.sender_id === user.id;
+                      const showTime = idx === 0 || new Date(msg.created_at) - new Date(messages[idx-1].created_at) > 300000; // 5 min gap
+                      
+                      return (
+                        <React.Fragment key={msg.id}>
+                          {showTime && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="w-full flex justify-center my-4"
+                            >
+                              <span className="text-[11px] bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full font-medium shadow-sm">
+                                {new Date(msg.created_at).toLocaleString('id-ID', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
                               </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-end w-full mt-1">
-                          {/* Delete button on hover */}
-                          <button
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
-                            title="Hapus pesan"
+                            </motion.div>
+                          )}
+                          <motion.div 
+                            initial={{ 
+                              opacity: 0, 
+                              x: isMe ? 20 : -20,
+                              scale: 0.9
+                            }}
+                            animate={{ 
+                              opacity: 1, 
+                              x: 0,
+                              scale: 1
+                            }}
+                            exit={{ 
+                              opacity: 0, 
+                              scale: 0.8,
+                              transition: { duration: 0.2 }
+                            }}
+                            transition={{ 
+                              type: "spring", 
+                              stiffness: 300,
+                              damping: 25
+                            }}
+                            className={`group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
                           >
-                            <span className="material-symbols-outlined text-[14px]">delete</span>
-                            Hapus
-                          </button>
+                            <motion.div 
+                              whileHover={{ scale: 1.02 }}
+                              className={`max-w-[75%] rounded-2xl overflow-hidden ${
+                                isMe 
+                                  ? 'bg-primary text-on-primary rounded-tr-sm' 
+                                  : 'bg-surface-variant text-on-surface-variant rounded-tl-sm'
+                              }`}
+                            >
+                              {msg.image_url && (
+                                <motion.img 
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  transition={{ delay: 0.1 }}
+                                  src={msg.image_url} 
+                                  alt="Foto" 
+                                  className="w-full max-w-[280px] object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+                                  onClick={() => window.open(msg.image_url, '_blank')}
+                                />
+                              )}
+                              {msg.content && msg.content !== '📷 Foto' && (
+                                <p className="whitespace-pre-wrap word-break px-4 pt-2 pb-1">{msg.content}</p>
+                              )}
+                              {msg.image_url && !msg.content && (
+                                <div className="h-0"></div>
+                              )}
+                              
+                              {/* Time and Checkmarks inside bubble */}
+                              <div className={`flex items-center justify-end gap-1 px-3 pb-1.5 ${isMe ? 'text-white/80' : 'text-on-surface-variant/80'}`}>
+                                <span className="text-[10px]">
+                                  {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                {isMe && (
+                                  <motion.span 
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="material-symbols-outlined text-[14px]"
+                                    style={{ color: msg.is_read ? '#38bdf8' : 'currentColor' }}
+                                    title={msg.is_read ? "Dibaca" : "Terkirim"}
+                                  >
+                                    {msg.is_read ? 'done_all' : 'done'}
+                                  </motion.span>
+                                )}
+                              </div>
+                            </motion.div>
+                            
+                            <div className="flex items-center justify-end w-full mt-1">
+                              {/* Delete button on hover */}
+                              <motion.button
+                                initial={{ opacity: 0, x: isMe ? 10 : -10 }}
+                                whileHover={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.2 }}
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 text-[11px] text-on-surface-variant hover:text-red-500"
+                                title="Hapus pesan"
+                              >
+                                <span className="material-symbols-outlined text-[14px]">delete</span>
+                                Hapus
+                              </motion.button>
+                            </div>
+                          </motion.div>
+                        </React.Fragment>
+                      );
+                    })}
+                  </AnimatePresence>
+                  <AnimatePresence>
+                    {isOtherTyping && (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -20, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="flex flex-col items-start"
+                      >
+                        <div className="bg-surface-variant rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1">
+                          <motion.span 
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                            className="w-2 h-2 bg-on-surface-variant/60 rounded-full"
+                          />
+                          <motion.span 
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0.15 }}
+                            className="w-2 h-2 bg-on-surface-variant/60 rounded-full"
+                          />
+                          <motion.span 
+                            animate={{ y: [0, -5, 0] }}
+                            transition={{ duration: 0.6, repeat: Infinity, delay: 0.3 }}
+                            className="w-2 h-2 bg-on-surface-variant/60 rounded-full"
+                          />
                         </div>
-                      </div>
-                    );
-                  })}
-                  {isOtherTyping && (
-                    <div className="flex flex-col items-start">
-                      <div className="bg-surface-variant rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1">
-                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-2 h-2 bg-on-surface-variant/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                      </div>
-                      <span className="text-[10px] text-on-surface-variant mt-1 ml-1">sedang mengetik...</span>
-                    </div>
-                  )}
+                        <motion.span 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-[10px] text-on-surface-variant mt-1 ml-1"
+                        >
+                          sedang mengetik...
+                        </motion.span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <div ref={messagesEndRef} />
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-surface border-t border-outline-variant">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="p-4 bg-surface border-t border-outline-variant"
+                >
                   {/* Image Preview */}
-                  {imagePreview && (
-                    <div className="mb-3 relative inline-block">
-                      <img src={imagePreview} alt="Preview" className="h-24 rounded-lg border border-outline-variant shadow-sm object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setImagePreview(null)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                  <AnimatePresence>
+                    {imagePreview && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="mb-3 relative inline-block"
                       >
-                        <span className="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </div>
-                  )}
+                        <img src={imagePreview} alt="Preview" className="h-24 rounded-lg border border-outline-variant shadow-sm object-cover" />
+                        <motion.button
+                          whileHover={{ scale: 1.1, rotate: 90 }}
+                          whileTap={{ scale: 0.9 }}
+                          type="button"
+                          onClick={() => setImagePreview(null)}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   {/* Checking Image Indicator */}
-                  {isCheckingImage && (
-                    <div className="mb-3 flex items-center gap-2 text-sm text-on-surface-variant">
-                      <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                      Memeriksa keamanan foto...
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {isCheckingImage && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mb-3 flex items-center gap-2 text-sm text-on-surface-variant"
+                      >
+                        <motion.span 
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="material-symbols-outlined text-[18px]"
+                        >
+                          progress_activity
+                        </motion.span>
+                        Memeriksa keamanan foto...
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <form onSubmit={handleSendMessage} className="flex gap-2 items-end">
                     <input
                       type="file"
@@ -649,7 +838,9 @@ const Messages = () => {
                       accept="image/*"
                       className="hidden"
                     />
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1, rotate: 15 }}
+                      whileTap={{ scale: 0.9 }}
                       type="button"
                       onClick={() => imageInputRef.current?.click()}
                       disabled={isSending || isCheckingImage}
@@ -657,8 +848,9 @@ const Messages = () => {
                       title="Kirim foto"
                     >
                       <span className="material-symbols-outlined text-[24px]">image</span>
-                    </button>
-                    <input
+                    </motion.button>
+                    <motion.input
+                      whileFocus={{ scale: 1.01 }}
                       type="text"
                       value={newMessage}
                       onChange={(e) => {
@@ -670,24 +862,70 @@ const Messages = () => {
                         }
                       }}
                       placeholder="Ketik pesan..."
-                      className="flex-grow bg-surface-variant border-none rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-primary text-body-md text-on-surface"
+                      className="flex-grow bg-surface-variant border-none rounded-full px-5 py-3 focus:outline-none focus:ring-2 focus:ring-primary text-body-md text-on-surface transition-all"
                     />
-                    <button 
+                    <motion.button 
                       type="submit"
                       disabled={(!newMessage.trim() && !imagePreview) || isSending}
-                      className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center disabled:opacity-50 disabled:bg-surface-variant disabled:text-outline hover:bg-primary-container hover:text-on-primary-container transition-colors transform active:scale-95 flex-shrink-0"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9, rotate: -15 }}
+                      animate={newMessage.trim() || imagePreview ? { 
+                        scale: [1, 1.1, 1],
+                      } : {}}
+                      transition={{ 
+                        scale: { duration: 0.3, repeat: newMessage.trim() ? Infinity : 0, repeatDelay: 2 }
+                      }}
+                      className="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center disabled:opacity-50 disabled:bg-surface-variant disabled:text-outline hover:bg-primary-container hover:text-on-primary-container transition-colors flex-shrink-0"
                     >
-                      <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>send</span>
-                    </button>
+                      <motion.span 
+                        animate={isSending ? { x: [0, 5, 0] } : {}}
+                        transition={{ duration: 0.3, repeat: isSending ? Infinity : 0 }}
+                        className="material-symbols-outlined" 
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        send
+                      </motion.span>
+                    </motion.button>
                   </form>
-                </div>
+                </motion.div>
               </>
             ) : (
-              <div className="flex-grow flex flex-col items-center justify-center text-on-surface-variant p-8 text-center bg-surface-container-lowest">
-                <span className="material-symbols-outlined text-[80px] opacity-20 mb-4">forum</span>
-                <h3 className="font-headline-sm text-on-surface mb-2">Mulai Percakapan</h3>
-                <p>Pilih pesan dari daftar di samping untuk mulai mengobrol.</p>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="flex-grow flex flex-col items-center justify-center text-on-surface-variant p-8 text-center bg-surface-container-lowest"
+              >
+                <motion.span 
+                  animate={{ 
+                    y: [0, -15, 0],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{ 
+                    duration: 4, 
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="material-symbols-outlined text-[80px] opacity-20 mb-4"
+                >
+                  forum
+                </motion.span>
+                <motion.h3 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="font-headline-sm text-on-surface mb-2"
+                >
+                  Mulai Percakapan
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  Pilih pesan dari daftar di samping untuk mulai mengobrol.
+                </motion.p>
+              </motion.div>
             )}
           </div>
         </div>
