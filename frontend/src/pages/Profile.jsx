@@ -17,7 +17,6 @@ const Profile = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [fullName, setFullName] = useState('');
-  const [nim, setNim] = useState('');
   const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
 
@@ -47,7 +46,6 @@ const Profile = () => {
 
       if (profile) {
         setFullName(profile.full_name || '');
-        setNim(profile.nim || '');
         setAvatarUrl(profile.avatar_url || '');
       }
 
@@ -93,7 +91,7 @@ const Profile = () => {
     setSavingProfile(true);
     const { error } = await supabase
       .from('users')
-      .update({ full_name: fullName, nim: nim, avatar_url: avatarUrl })
+      .update({ full_name: fullName, avatar_url: avatarUrl })
       .eq('id', user.id);
 
     setSavingProfile(false);
@@ -194,7 +192,6 @@ const Profile = () => {
             </div>
             <div>
               <h1 className="font-headline-lg text-headline-lg text-on-surface mb-1">{fullName || 'Pengguna Anonim'}</h1>
-              <p className="font-body-md text-body-md text-on-surface-variant mb-1">NIM: {nim || '-'}</p>
               <p className="font-body-md text-body-md text-on-surface-variant">{email}</p>
             </div>
           </div>
@@ -244,10 +241,6 @@ const Profile = () => {
                   <div>
                     <label className="font-label-sm text-label-sm text-on-surface mb-xs block">Nama Lengkap</label>
                     <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full rounded-md border border-outline-variant bg-surface px-md py-sm font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" required />
-                  </div>
-                  <div>
-                    <label className="font-label-sm text-label-sm text-on-surface mb-xs block">NIM</label>
-                    <input value={nim} onChange={(e) => setNim(e.target.value)} className="w-full rounded-md border border-outline-variant bg-surface px-md py-sm font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" required />
                   </div>
                 </div>
               </div>
