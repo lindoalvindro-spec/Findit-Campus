@@ -17,7 +17,7 @@ const Home = () => {
     total: 0,
     returned: 0,
     lost: 0,
-    successRate: 100
+    successRate: 0
   });
 
   useEffect(() => {
