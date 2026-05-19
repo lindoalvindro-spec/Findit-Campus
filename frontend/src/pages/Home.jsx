@@ -240,8 +240,7 @@ const Home = () => {
             
             <motion.div 
               initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
+              animate="visible"
               variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
               className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
@@ -300,8 +299,7 @@ const Home = () => {
             
             <motion.div 
               initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
+              animate="visible"
               variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
               className="grid grid-cols-1 md:grid-cols-3 gap-6"
             >
