@@ -331,6 +331,32 @@ const Messages = () => {
       // In a real app, you'd show an error toast and maybe remove the optimistic message
     } else {
       fetchConversations(user.id); // Update sidebar last message
+      
+      // Send Push Notification via OneSignal
+      const restApiKey = import.meta.env.VITE_ONESIGNAL_REST_API_KEY;
+      if (restApiKey) {
+        try {
+          await fetch('https://onesignal.com/api/v1/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${restApiKey}`
+            },
+            body: JSON.stringify({
+              app_id: "8d8d85b2-6aeb-4b2b-8521-2abe43cde32a",
+              include_aliases: {
+                external_id: [activeChat.id]
+              },
+              target_channel: "push",
+              headings: { "en": `Pesan Baru` },
+              contents: { "en": msgText || '📷 Mengirim foto' },
+              url: `${window.location.origin}/messages?userId=${user.id}`
+            })
+          });
+        } catch (pushErr) {
+          console.error("Error sending push notification:", pushErr);
+        }
+      }
     }
 
     // Anti-spam cooldown 500ms
