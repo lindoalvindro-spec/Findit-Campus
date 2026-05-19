@@ -8,6 +8,8 @@ import LostItems from './pages/LostItems';
 import FoundItems from './pages/FoundItems';
 import Profile from './pages/Profile';
 import Messages from './pages/Messages';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import OneSignal from 'react-onesignal';
@@ -61,6 +63,8 @@ function App() {
             <Route path="/found-items" element={<FoundItems />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/messages" element={<Messages />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </BrowserRouter>
       </ConfirmProvider>

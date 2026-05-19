@@ -172,7 +172,7 @@ const Auth = () => {
                   <div className="flex flex-col gap-xs">
                     <div className="flex justify-between items-center">
                       <label className="font-label-md text-label-md text-on-surface" htmlFor="login-password">Kata Sandi</label>
-                      <a className="font-label-sm text-label-sm text-primary hover:underline" href="#">Lupa kata sandi?</a>
+                      <Link className="font-label-sm text-label-sm text-primary hover:underline" to="/forgot-password">Lupa kata sandi?</Link>
                     </div>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">lock</span>
