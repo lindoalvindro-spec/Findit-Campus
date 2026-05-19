@@ -150,7 +150,12 @@ const Navbar = () => {
     <header className="bg-surface dark:bg-on-background border-b border-outline-variant dark:border-outline shadow-sm sticky top-0 z-50">
       <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto h-16">
         {/* Brand */}
-        <Link to="/" className="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim hover:opacity-90 transition-opacity">
+        <Link to="/" className="flex items-center gap-2 font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed-dim hover:opacity-90 transition-opacity group">
+          <svg className="w-8 h-8 text-primary dark:text-primary-fixed-dim group-hover:scale-105 transition-transform" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 20C70 20 45 45 45 75C45 115 100 170 100 170C100 170 155 115 155 75C155 45 130 20 100 20Z" stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="100" cy="75" r="25" stroke="currentColor" strokeWidth="10"/>
+            <path d="M118 93L135 110" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/>
+          </svg>
           FindIt Campus
         </Link>
         {/* Desktop Navigation */}
