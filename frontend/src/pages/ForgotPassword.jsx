@@ -83,13 +83,13 @@ const ForgotPassword = () => {
 
             <form className="flex flex-col gap-md" onSubmit={handleResetPassword}>
               <div className="flex flex-col gap-xs">
-                <label className="font-label-md text-label-md text-on-surface" htmlFor="email">Email Universitas</label>
+                <label className="font-label-md text-label-md text-on-surface" htmlFor="email">Alamat Email</label>
                 <div className="relative">
                   <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">mail</span>
                   <input 
                     className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-md py-sm font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" 
                     id="email" 
-                    placeholder="nama@kampus.ac.id" 
+                    placeholder="nama@gmail.com" 
                     type="email" 
                     required
                     value={email}

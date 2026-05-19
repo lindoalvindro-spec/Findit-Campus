@@ -10,8 +10,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [nim, setNim] = useState('');
-  
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -59,7 +57,7 @@ const Auth = () => {
         if (data.user) {
            const { error: insertError } = await supabase
              .from('users')
-             .insert([{ id: data.user.id, email: email, full_name: fullName, nim: nim }]);
+             .insert([{ id: data.user.id, email: email, full_name: fullName }]);
            
            if (insertError) {
                console.error("Error inserting into public.users", insertError);
@@ -70,7 +68,6 @@ const Auth = () => {
         setActiveTab('login');
         setPassword('');
         setFullName('');
-        setNim('');
         // We keep the email so they don't have to retype it
       }
     } catch (err) {
@@ -155,13 +152,13 @@ const Auth = () => {
                 </div>
                 <form className="flex flex-col gap-md" onSubmit={handleLogin}>
                   <div className="flex flex-col gap-xs">
-                    <label className="font-label-md text-label-md text-on-surface" htmlFor="login-email">Email Universitas</label>
+                    <label className="font-label-md text-label-md text-on-surface" htmlFor="login-email">Alamat Email</label>
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline">mail</span>
                       <input 
                         className="w-full bg-surface border border-outline-variant rounded-lg pl-10 pr-md py-sm font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" 
                         id="login-email" 
-                        placeholder="nama@kampus.ac.id" 
+                        placeholder="nama@gmail.com" 
                         type="email" 
                         required
                         value={email}
@@ -228,27 +225,15 @@ const Auth = () => {
                     />
                   </div>
                   <div className="flex flex-col gap-xs">
-                    <label className="font-label-md text-label-md text-on-surface" htmlFor="reg-email">Email Universitas</label>
+                    <label className="font-label-md text-label-md text-on-surface" htmlFor="reg-email">Alamat Email</label>
                     <input 
                       className="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" 
                       id="reg-email" 
-                      placeholder="mahasiswa@kampus.ac.id" 
+                      placeholder="nama@gmail.com" 
                       type="email"
                       required 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-xs">
-                    <label className="font-label-md text-label-md text-on-surface" htmlFor="reg-nim">NIM (Nomor Induk Mahasiswa)</label>
-                    <input 
-                      className="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" 
-                      id="reg-nim" 
-                      placeholder="1234567890" 
-                      type="text"
-                      required 
-                      value={nim}
-                      onChange={(e) => setNim(e.target.value)}
                     />
                   </div>
                   <div className="flex flex-col gap-xs">
@@ -274,7 +259,7 @@ const Auth = () => {
           {/* Secure Badge */}
           <div className="mt-lg flex items-center justify-center gap-xs text-on-surface-variant font-body-sm text-body-sm opacity-80">
             <span className="material-symbols-outlined text-[16px]">verified_user</span>
-            Data Anda diamankan dengan enkripsi standar kampus.
+            Data Anda diamankan dengan enkripsi standar industri.
           </div>
 
         </div>
