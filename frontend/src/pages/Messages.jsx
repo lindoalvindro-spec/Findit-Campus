@@ -550,14 +550,14 @@ const Messages = () => {
                           )}
                           
                           {/* Time and Checkmarks inside bubble */}
-                          <div className={`flex items-center justify-end gap-1 px-3 pb-1.5 ${isMe ? 'text-primary-container' : 'text-on-surface-variant'} opacity-80`}>
+                          <div className={`flex items-center justify-end gap-1 px-3 pb-1.5 ${isMe ? 'text-white/80' : 'text-on-surface-variant/80'}`}>
                             <span className="text-[10px]">
                               {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {isMe && (
                               <span 
                                 className="material-symbols-outlined text-[14px]"
-                                style={{ color: msg.is_read ? '#60a5fa' : 'currentColor' }}
+                                style={{ color: msg.is_read ? '#38bdf8' : 'currentColor' }}
                                 title={msg.is_read ? "Dibaca" : "Terkirim"}
                               >
                                 {msg.is_read ? 'done_all' : 'done'}
