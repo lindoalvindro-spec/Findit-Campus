@@ -1,14 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const path = location.pathname;
   const [user, setUser] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
   const prevUnreadRef = useRef(0);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error) {
+      console.error("Gagal logout:", error.message);
+    }
+  };
 
   // Notification sound using Web Audio API
   const playNotificationSound = () => {
@@ -175,6 +185,13 @@ const Navbar = () => {
                   )}
                 </div>
               </Link>
+              <button 
+                onClick={handleLogout}
+                className="text-on-surface-variant hover:text-error transition-colors active:scale-95 ml-2" 
+                title="Keluar"
+              >
+                <span className="material-symbols-outlined text-[24px]">logout</span>
+              </button>
             </div>
           ) : (
             <Link to="/auth" className="text-on-surface-variant hover:text-primary transition-colors active:scale-95" title="Masuk / Daftar">
