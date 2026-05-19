@@ -522,9 +522,11 @@ const Messages = () => {
                     return (
                       <div key={msg.id} className={`group flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                         {showTime && (
-                          <span className="text-[11px] text-on-surface-variant mb-2 mt-4 mx-2">
-                            {new Date(msg.created_at).toLocaleString('id-ID', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                          <div className="w-full flex justify-center my-4">
+                            <span className="text-[11px] bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full font-medium shadow-sm">
+                              {new Date(msg.created_at).toLocaleString('id-ID', { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
                         )}
                         <div 
                           className={`max-w-[75%] rounded-2xl overflow-hidden ${
@@ -542,25 +544,30 @@ const Messages = () => {
                             />
                           )}
                           {msg.content && msg.content !== '📷 Foto' && (
-                            <p className="whitespace-pre-wrap word-break px-4 py-2">{msg.content}</p>
+                            <p className="whitespace-pre-wrap word-break px-4 pt-2 pb-1">{msg.content}</p>
                           )}
                           {msg.image_url && !msg.content && (
                             <div className="h-0"></div>
                           )}
+                          
+                          {/* Time and Checkmarks inside bubble */}
+                          <div className={`flex items-center justify-end gap-1 px-3 pb-1.5 ${isMe ? 'text-primary-container' : 'text-on-surface-variant'} opacity-80`}>
+                            <span className="text-[10px]">
+                              {new Date(msg.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {isMe && (
+                              <span 
+                                className="material-symbols-outlined text-[14px]"
+                                style={{ color: msg.is_read ? '#60a5fa' : 'currentColor' }}
+                                title={msg.is_read ? "Dibaca" : "Terkirim"}
+                              >
+                                {msg.is_read ? 'done_all' : 'done'}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 mt-1">
-                          {/* Read receipt checkmarks (only for own messages) */}
-                          {isMe && (
-                            <span 
-                              className="material-symbols-outlined text-[14px]"
-                              style={{ color: msg.is_read ? '#0ea5e9' : '#94a3b8' }}
-                              title={msg.is_read ? "Dibaca" : "Terkirim"}
-                            >
-                              {msg.is_read ? 'done_all' : 'done'}
-                            </span>
-                          )}
-                          
+                        <div className="flex items-center justify-end w-full mt-1">
                           {/* Delete button on hover */}
                           <button
                             onClick={() => handleDeleteMessage(msg.id)}
