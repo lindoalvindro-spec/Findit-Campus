@@ -37,12 +37,30 @@ const Profile = () => {
       setUser(session.user);
       setEmail(session.user.email);
 
-      // Fetch profile details
-      const { data: profile } = await supabase
+      // Fetch or create profile details
+      let { data: profile, error } = await supabase
         .from('users')
         .select('*')
         .eq('id', session.user.id)
         .single();
+
+      // If user doesn't exist in users table, create it
+      if (error && error.code === 'PGRST116') {
+        const { data: newProfile, error: insertError } = await supabase
+          .from('users')
+          .insert([{
+            id: session.user.id,
+            email: session.user.email,
+            full_name: session.user.user_metadata?.full_name || '',
+            avatar_url: ''
+          }])
+          .select()
+          .single();
+        
+        if (!insertError && newProfile) {
+          profile = newProfile;
+        }
+      }
 
       if (profile) {
         setFullName(profile.full_name || '');
@@ -89,10 +107,18 @@ const Profile = () => {
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setSavingProfile(true);
+    
+    // Use upsert to handle both insert and update
     const { error } = await supabase
       .from('users')
-      .update({ full_name: fullName, avatar_url: avatarUrl })
-      .eq('id', user.id);
+      .upsert({ 
+        id: user.id,
+        email: user.email,
+        full_name: fullName, 
+        avatar_url: avatarUrl 
+      }, {
+        onConflict: 'id'
+      });
 
     setSavingProfile(false);
     if (error) {
