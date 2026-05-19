@@ -5,7 +5,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
-import { useConfirm } from '../components/ConfirmDialog';
 
 const formatLastSeen = (dateString) => {
   if (!dateString) return '';
