@@ -10,8 +10,44 @@ import Profile from './pages/Profile';
 import Messages from './pages/Messages';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
+import OneSignal from 'react-onesignal';
+import { supabase } from './supabaseClient';
+import { useEffect } from 'react';
 
 function App() {
+  useEffect(() => {
+    const initOneSignal = async () => {
+      try {
+        await OneSignal.init({
+          appId: "8d8d85b2-6aeb-4b2b-8521-2abe43cde32a",
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: {
+            enable: true,
+          },
+        });
+
+        // Set up user login for notifications
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          OneSignal.login(session.user.id);
+        }
+        
+        // Listen for auth changes
+        supabase.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            OneSignal.login(session.user.id);
+          } else {
+            OneSignal.logout();
+          }
+        });
+      } catch (error) {
+        console.error('OneSignal Init Error:', error);
+      }
+    };
+    
+    initOneSignal();
+  }, []);
+
   return (
     <ToastProvider>
       <ConfirmProvider>
