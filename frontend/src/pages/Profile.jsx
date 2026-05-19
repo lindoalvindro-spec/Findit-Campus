@@ -52,8 +52,7 @@ const Profile = () => {
             id: session.user.id,
             email: session.user.email,
             full_name: session.user.user_metadata?.full_name || '',
-            avatar_url: '',
-            nim: '' // Add empty nim to satisfy NOT NULL constraint
+            avatar_url: ''
           }])
           .select()
           .single();
@@ -116,8 +115,7 @@ const Profile = () => {
         id: user.id,
         email: user.email,
         full_name: fullName, 
-        avatar_url: avatarUrl,
-        nim: '' // Keep nim as empty string to satisfy NOT NULL constraint
+        avatar_url: avatarUrl
       }, {
         onConflict: 'id'
       });
