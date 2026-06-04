@@ -1,12 +1,51 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useToast } from './Toast';
 
 const Footer = () => {
+  const toast = useToast();
+
+  const handleShare = async (e) => {
+    e.preventDefault();
+    const shareUrl = 'https://findit-campus-omega.vercel.app/';
+    const shareData = {
+      title: 'FindIt Campus',
+      text: 'Platform pelaporan barang hilang dan temuan di area kampus.',
+      url: shareUrl
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Tautan aplikasi berhasil disalin ke clipboard!');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        toast.error('Gagal membagikan tautan.');
+      }
+    }
+  };
+
   const socialLinks = [
-    { icon: 'language', label: 'Website' },
-    { icon: 'share', label: 'Share' },
-    { icon: 'mail', label: 'Email' }
+    { 
+      icon: 'language', 
+      label: 'Website', 
+      href: 'https://github.com/lindoalvindro-spec/Findit-Campus', 
+      target: '_blank', 
+      rel: 'noopener noreferrer' 
+    },
+    { 
+      icon: 'share', 
+      label: 'Share', 
+      onClick: handleShare 
+    },
+    { 
+      icon: 'mail', 
+      label: 'Email', 
+      href: 'mailto:lindoalvindro@gmail.com?subject=Tanya%20FindIt%20Campus' 
+    }
   ];
 
   const contributors = [
@@ -63,14 +102,17 @@ const Footer = () => {
               {socialLinks.map((link, index) => (
                 <motion.a 
                   key={index}
-                  href="#" 
+                  href={link.href || '#'}
+                  onClick={link.onClick}
+                  target={link.target}
+                  rel={link.rel}
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary hover:bg-primary/5 transition-all shadow-sm"
+                  className="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary hover:bg-primary/5 transition-all shadow-sm cursor-pointer"
                   title={link.label}
                 >
                   <span className="material-symbols-outlined text-[20px]">{link.icon}</span>
