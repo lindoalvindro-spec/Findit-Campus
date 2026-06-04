@@ -341,93 +341,111 @@ const Home = () => {
         </section>
 
         {/* How it Works */}
-        <section className="py-16 bg-surface-container-lowest">
-          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto text-center">
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="font-headline-md text-headline-md text-on-surface mb-12"
-            >
-              Cara Kerja
-            </motion.h2>
+        <section className="py-20 bg-surface-container-lowest">
+          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
+            {/* Header Section */}
+            <div className="mb-16 max-w-2xl mx-auto flex flex-col items-center text-center">
+              <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Alur Sistem</span>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="font-headline-lg text-headline-lg text-on-surface"
+              >
+                Cara Kerja FindIt Campus
+              </motion.h2>
+              <div className="w-12 h-1 bg-primary rounded-full mt-4"></div>
+            </div>
+
             <motion.div 
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={{ visible: { transition: { staggerChildren: 0.2 } }, hidden: {} }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 relative"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10"
             >
-              {/* Connecting Line (Desktop) */}
+              {/* Card 1 */}
               <motion.div 
-                initial={{ scaleX: 0 }}
-                whileInView={{ scaleX: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="hidden md:block absolute top-1/2 left-1/6 right-1/6 h-0.5 bg-outline-variant -z-10 -translate-y-1/2 origin-left"
-              ></motion.div>
-              
-              <motion.div 
-                variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }} 
-                className="flex flex-col items-center"
+                variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
+                whileHover={{ y: -10 }}
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                  01
+                </div>
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center text-primary mb-4 z-10 border-4 border-surface-container-lowest shadow-md cursor-pointer"
+                  className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 shadow-sm"
                 >
                   <motion.span 
                     animate={{ rotate: [0, -5, 5, 0] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                    className="material-symbols-outlined text-3xl"
+                    className="material-symbols-outlined text-2xl"
                   >
                     edit_document
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Lapor</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-[320px]">Buat laporan detail mengenai barang yang hilang atau Anda temukan.</p>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Lapor & Publikasikan</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Unggah detail barang hilang atau temuan lengkap dengan foto dan lokasi spesifik di kampus secara cepat.
+                </p>
               </motion.div>
               
+              {/* Card 2 */}
               <motion.div 
-                variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }} 
-                className="flex flex-col items-center"
+                variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
+                whileHover={{ y: -10 }}
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-secondary/30 hover:bg-secondary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                  02
+                </div>
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: -5 }}
+                  whileHover={{ scale: 1.1, rotate: -5 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface mb-4 z-10 border-4 border-surface-container-lowest shadow-md cursor-pointer"
+                  className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary mb-6 group-hover:bg-secondary group-hover:text-on-secondary transition-all duration-300 shadow-sm"
                 >
                   <motion.span 
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
-                    className="material-symbols-outlined text-3xl"
+                    className="material-symbols-outlined text-2xl"
                   >
                     fact_check
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Verifikasi</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-[320px]">Sistem mencocokkan data dan memfasilitasi komunikasi aman.</p>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-secondary transition-colors duration-300 font-semibold">Pencocokan & Moderasi</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Sistem otomatis mencocokkan data barang serta memoderasi konten gambar (AI NSFW) dan kata-kata kasar untuk keamanan.
+                </p>
               </motion.div>
               
+              {/* Card 3 */}
               <motion.div 
-                variants={{ hidden: { opacity: 0, scale: 0.8 }, visible: { opacity: 1, scale: 1 } }} 
-                className="flex flex-col items-center"
+                variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
+                whileHover={{ y: -10 }}
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-tertiary/30 hover:bg-tertiary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                  03
+                </div>
                 <motion.div 
-                  whileHover={{ scale: 1.15, rotate: 5 }}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container mb-4 z-10 border-4 border-surface-container-lowest shadow-md cursor-pointer"
+                  className="w-14 h-14 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary mb-6 group-hover:bg-tertiary group-hover:text-on-tertiary transition-all duration-300 shadow-sm"
                 >
                   <motion.span 
                     animate={{ y: [0, -3, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
-                    className="material-symbols-outlined text-3xl"
+                    className="material-symbols-outlined text-2xl"
                   >
                     handshake
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2">Kembali</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-[320px]">Bertemu di lokasi aman kampus untuk mengembalikan barang.</p>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-tertiary transition-colors duration-300 font-semibold">Hubungi & Kembalikan</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                  Komunikasi langsung secara aman dengan fitur chat realtime dan lakukan serah terima barang di area kampus.
+                </p>
               </motion.div>
             </motion.div>
           </div>
