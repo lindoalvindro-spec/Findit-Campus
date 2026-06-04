@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useSearchParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 
 const ItemDetail = () => {
   const [searchParams] = useSearchParams();
@@ -17,18 +17,7 @@ const ItemDetail = () => {
         return;
       }
       
-      const { data, error } = await supabase
-        .from('lost_items')
-        .select(`
-          *,
-          users (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('id', id)
-        .single();
+      const { data, error } = await apiClient.get(`/api/items/${id}`);
       
       if (!error && data) {
         setItem(data);
@@ -40,6 +29,7 @@ const ItemDetail = () => {
 
     fetchItem();
   }, [id]);
+
 
   if (loading) {
     return (

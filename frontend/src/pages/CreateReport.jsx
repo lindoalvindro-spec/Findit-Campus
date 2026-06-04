@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
@@ -29,30 +29,35 @@ const CreateReport = () => {
 
   useEffect(() => {
     const checkUserAndFetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const token = localStorage.getItem('token');
+      const localUser = localStorage.getItem('user');
+      if (!token || !localUser) {
         toast.warning('Silakan masuk (login) terlebih dahulu untuk membuat/mengedit laporan.');
         navigate('/auth');
         return;
       }
       
-      setUser(session.user);
+      let loggedInUser;
+      try {
+        loggedInUser = JSON.parse(localUser);
+        setUser(loggedInUser);
+      } catch (e) {
+        toast.warning('Silakan masuk (login) terlebih dahulu untuk membuat/mengedit laporan.');
+        navigate('/auth');
+        return;
+      }
 
       // If there is an editId, fetch the report data
       if (editId) {
         setIsEditMode(true);
-        const { data, error } = await supabase
-          .from('lost_items')
-          .select('*')
-          .eq('id', editId)
-          .single();
+        const { data, error } = await apiClient.get(`/api/items/${editId}`);
 
         if (error) {
           toast.error('Gagal memuat data laporan: ' + error.message);
           navigate('/profile');
         } else if (data) {
           // Make sure the user owns this report
-          if (data.user_id !== session.user.id) {
+          if (data.user_id !== loggedInUser.id) {
             toast.error('Anda tidak memiliki akses untuk mengedit laporan ini.');
             navigate('/profile');
             return;
@@ -131,18 +136,11 @@ const CreateReport = () => {
 
     if (isEditMode) {
       // Update existing record
-      const { error } = await supabase
-        .from('lost_items')
-        .update(payload)
-        .eq('id', editId)
-        .eq('user_id', user.id); // Extra safety check
+      const { error } = await apiClient.put(`/api/items/${editId}`, payload);
       responseError = error;
     } else {
       // Insert new record
-      payload.user_id = user.id;
-      const { error } = await supabase
-        .from('lost_items')
-        .insert([payload]);
+      const { error } = await apiClient.post('/api/items', payload);
       responseError = error;
     }
 
@@ -155,6 +153,7 @@ const CreateReport = () => {
       navigate(isEditMode ? '/profile' : '/lost-items');
     }
   };
+
 
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">

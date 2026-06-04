@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
 import { motion } from 'framer-motion';
+import { apiClient } from '../services/apiClient';
+import { io } from 'socket.io-client';
 
 const Navbar = () => {
-  const location = useLocation();
+  const { pathname: path } = useLocation();
   const navigate = useNavigate();
-  const path = location.pathname;
   const [user, setUser] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
@@ -14,7 +14,9 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
       navigate('/auth');
     } catch (error) {
       console.error("Gagal logout:", error.message);
@@ -55,40 +57,39 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    // Check initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchAvatar(session.user.id);
-        fetchUnreadCount(session.user.id);
+      const token = localStorage.getItem('token');
+      const localUser = localStorage.getItem('user');
+      if (token && localUser) {
+        try {
+          const parsedUser = JSON.parse(localUser);
+          setUser(parsedUser);
+          fetchAvatar(parsedUser.id);
+          fetchUnreadCount();
+        } catch (err) {
+          console.error("Error parsing user from localStorage:", err);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
     };
+    
     getSession();
 
-    // Listen to changes in auth state
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchAvatar(session.user.id);
-        fetchUnreadCount(session.user.id);
-      } else {
-        setAvatarUrl('');
-        setUnreadCount(0);
-      }
-    });
+    const handleStorageChange = () => {
+      getSession();
+    };
+    window.addEventListener('storage', handleStorageChange);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const fetchAvatar = async (userId) => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('avatar_url')
-        .eq('id', userId)
-        .single();
-      
+      const { data, error } = await apiClient.get(`/api/auth/user/${userId}`);
       if (!error && data) {
         setAvatarUrl(data.avatar_url || '');
       }
@@ -97,45 +98,33 @@ const Navbar = () => {
     }
   };
 
-  const fetchUnreadCount = async (userId) => {
-    const { count, error } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('receiver_id', userId)
-      .eq('is_read', false);
-    
-    if (!error) {
-      setUnreadCount(count || 0);
+  const fetchUnreadCount = async () => {
+    try {
+      const { data, error } = await apiClient.get('/api/messages/unread-count');
+      if (!error && data) {
+        setUnreadCount(data.count || 0);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil jumlah pesan belum dibaca:", err);
     }
   };
 
-  // Real-time subscription for unread messages
+  // Real-time subscription for unread messages using Socket.io
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel('navbar-unread')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, () => {
-        playNotificationSound();
-        fetchUnreadCount(user.id);
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, () => {
-        fetchUnreadCount(user.id);
-      })
-      .subscribe();
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socket = io(API_BASE_URL);
+
+    socket.emit('join_user_room', user.id);
+
+    socket.on('receive_message', (msg) => {
+      playNotificationSound();
+      fetchUnreadCount();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      socket.disconnect();
     };
   }, [user]);
 

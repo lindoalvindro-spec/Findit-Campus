@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
-import { useNavigate, Link } from 'react-router-dom';
+import { apiClient } from '../services/apiClient';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -9,21 +9,24 @@ const ResetPassword = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    // Check if the user is currently engaged in a password recovery session.
-    // Supabase automatically logs the user in when they click the recovery link,
-    // so we should have an active session here.
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // If there's no session, they probably didn't come from an email link
-        // or the link expired.
+    // Check if the reset token is valid.
+    const checkToken = async () => {
+      if (!token) {
+        setError('Tautan tidak valid atau telah kedaluwarsa. Silakan minta tautan baru.');
+        return;
+      }
+      
+      const { error: verifyError } = await apiClient.get(`/api/auth/verify-reset-token?token=${token}`);
+      if (verifyError) {
         setError('Tautan tidak valid atau telah kedaluwarsa. Silakan minta tautan baru.');
       }
     };
-    checkSession();
-  }, []);
+    checkToken();
+  }, [token]);
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
@@ -42,15 +45,18 @@ const ResetPassword = () => {
     setError('');
 
     try {
-      const { error } = await supabase.auth.updateUser({ password: password });
+      const { error } = await apiClient.post('/api/auth/reset-password', { 
+        token: token,
+        password: password 
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
 
-      setMessage('Kata sandi berhasil diperbarui! Mengarahkan Anda ke halaman utama...');
+      setMessage('Kata sandi berhasil diperbarui! Mengarahkan Anda ke halaman masuk...');
       
       // Clear message and redirect after 2 seconds
       setTimeout(() => {
-        navigate('/');
+        navigate('/auth');
       }, 2000);
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat memperbarui kata sandi.');
@@ -58,6 +64,7 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">

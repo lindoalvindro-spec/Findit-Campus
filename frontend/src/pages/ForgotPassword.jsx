@@ -1,33 +1,39 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 import { Link } from 'react-router-dom';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(null); // Changed to support elements
   const [error, setError] = useState('');
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage('');
+    setMessage(null);
     setError('');
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+      const { data, error } = await apiClient.post('/api/auth/forgot-password', { email });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message);
 
-      setMessage('Tautan pemulihan kata sandi telah dikirim ke email Anda. Silakan periksa kotak masuk atau folder spam Anda.');
+      setMessage(
+        <div>
+          <p className="mb-2">Tautan pemulihan kata sandi berhasil dibuat! Silakan klik tombol/link di bawah ini untuk mereset kata sandi:</p>
+          <Link to={`/reset-password?token=${data.token}`} className="text-primary hover:underline font-bold break-all block mt-2 p-2 bg-primary/10 rounded text-center">
+            Atur Ulang Kata Sandi
+          </Link>
+        </div>
+      );
     } catch (err) {
       setError(err.message || 'Terjadi kesalahan saat mengirim instruksi.');
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row">

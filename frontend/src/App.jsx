@@ -13,11 +13,11 @@ import ResetPassword from './pages/ResetPassword';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import OneSignal from 'react-onesignal';
-import { supabase } from './supabaseClient';
 import { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
+    let storageListener;
     const initOneSignal = async () => {
       try {
         await OneSignal.init({
@@ -28,27 +28,45 @@ function App() {
           },
         });
 
-        // Set up user login for notifications
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          OneSignal.login(session.user.id);
+        // Set up user login for notifications from localStorage
+        const localUser = localStorage.getItem('user');
+        if (localUser) {
+          try {
+            const user = JSON.parse(localUser);
+            OneSignal.login(user.id);
+          } catch (e) {
+            console.error("Error parsing user from localStorage for OneSignal:", e);
+          }
         }
         
-        // Listen for auth changes
-        supabase.auth.onAuthStateChange((_event, session) => {
-          if (session?.user) {
-            OneSignal.login(session.user.id);
+        // Listen for auth changes using window storage event
+        storageListener = () => {
+          const updatedUser = localStorage.getItem('user');
+          if (updatedUser) {
+            try {
+              const user = JSON.parse(updatedUser);
+              OneSignal.login(user.id);
+            } catch (e) {}
           } else {
             OneSignal.logout();
           }
-        });
+        };
+
+        window.addEventListener('storage', storageListener);
       } catch (error) {
         console.error('OneSignal Init Error:', error);
       }
     };
     
     initOneSignal();
+
+    return () => {
+      if (storageListener) {
+        window.removeEventListener('storage', storageListener);
+      }
+    };
   }, []);
+
 
   return (
     <ToastProvider>

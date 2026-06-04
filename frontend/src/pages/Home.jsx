@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 import { motion } from 'framer-motion';
 import { CardSkeleton } from '../components/LoadingSkeleton';
 
@@ -26,54 +26,31 @@ const Home = () => {
       setLoading(true);
       
       // 1. Fetch top 3 recent lost items
-      const { data: lostData, error: lostError } = await supabase
-        .from('lost_items')
-        .select('*')
-        .eq('status', 'lost')
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const { data: lostData, error: lostError } = await apiClient.get('/api/items?status=lost');
 
       // 2. Fetch top 3 recent found items
-      const { data: foundData, error: foundError } = await supabase
-        .from('lost_items')
-        .select('*')
-        .eq('status', 'found')
-        .order('created_at', { ascending: false })
-        .limit(3);
+      const { data: foundData, error: foundError } = await apiClient.get('/api/items?status=found');
 
-      if (!lostError && lostData) setLostItems(lostData);
-      if (!foundError && foundData) setFoundItems(foundData);
+      if (!lostError && lostData) setLostItems(lostData.slice(0, 3));
+      if (!foundError && foundData) setFoundItems(foundData.slice(0, 3));
 
       // 3. Fetch real database statistics
       try {
-        // Total reports
-        const { count: totalCount, error: totalErr } = await supabase
-          .from('lost_items')
-          .select('*', { count: 'exact', head: true });
+        const { data: allItems, error: allItemsError } = await apiClient.get('/api/items');
+        
+        if (!allItemsError && allItems) {
+          const total = allItems.length;
+          const lost = allItems.filter(item => item.status === 'lost').length;
+          const returned = allItems.filter(item => ['returned', 'claimed'].includes(item.status)).length;
+          const successRate = total > 0 ? Math.round((returned / total) * 100) : 0;
 
-        // Currently being searched (status is 'lost')
-        const { count: lostCount, error: lostErr } = await supabase
-          .from('lost_items')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'lost');
-
-        // Returned / Claimed items (status is 'returned' or 'claimed')
-        const { count: returnedCount, error: returnedErr } = await supabase
-          .from('lost_items')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['returned', 'claimed']);
-
-        const total = totalCount || 0;
-        const lost = lostCount || 0;
-        const returned = returnedCount || 0;
-        const successRate = total > 0 ? Math.round((returned / total) * 100) : 0;
-
-        setStats({
-          total,
-          lost,
-          returned,
-          successRate // Default to 0% if no reports yet
-        });
+          setStats({
+            total,
+            lost,
+            returned,
+            successRate
+          });
+        }
       } catch (err) {
         console.error("Gagal memuat statistik database:", err);
       }

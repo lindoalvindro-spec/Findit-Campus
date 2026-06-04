@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState('login');
@@ -21,7 +21,7 @@ const Auth = () => {
     setSuccessMsg('');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await apiClient.post('/api/auth/login', {
         email,
         password,
       });
@@ -29,10 +29,12 @@ const Auth = () => {
       if (error) {
         setErrorMsg(error.message);
       } else {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/');
       }
     } catch (err) {
-      setErrorMsg("Gagal terhubung ke database. Pastikan VITE_SUPABASE_URL di file .env sudah benar.");
+      setErrorMsg("Gagal terhubung ke API Server. Pastikan backend server Anda sudah aktif.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -46,7 +48,8 @@ const Auth = () => {
     setSuccessMsg('');
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await apiClient.post('/api/auth/register', {
+        fullName,
         email,
         password,
       });
@@ -54,29 +57,19 @@ const Auth = () => {
       if (error) {
         setErrorMsg(error.message);
       } else {
-        if (data.user) {
-           const { error: insertError } = await supabase
-             .from('users')
-             .insert([{ id: data.user.id, email: email, full_name: fullName }]);
-           
-           if (insertError) {
-               console.error("Error inserting into public.users", insertError);
-           }
-        }
-
         setSuccessMsg("Pendaftaran berhasil! Silakan masuk dengan akun Anda.");
         setActiveTab('login');
         setPassword('');
         setFullName('');
-        // We keep the email so they don't have to retype it
       }
     } catch (err) {
-      setErrorMsg("Gagal terhubung ke database. Pastikan VITE_SUPABASE_URL di file .env sudah benar.");
+      setErrorMsg("Gagal terhubung ke API Server. Pastikan backend server Anda sudah aktif.");
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex w-full h-screen overflow-hidden">

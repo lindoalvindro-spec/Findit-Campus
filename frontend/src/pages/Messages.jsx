@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
 import { motion, AnimatePresence } from 'framer-motion';
+import { io } from 'socket.io-client';
 
 const formatLastSeen = (dateString) => {
   if (!dateString) return '';
@@ -43,63 +44,50 @@ const Messages = () => {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const typingChannelRef = useRef(null);
   const imageInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isCheckingImage, setIsCheckingImage] = useState(false);
+  const socketRef = useRef(null);
+  const activeChatRef = useRef(null);
+
+  useEffect(() => {
+    activeChatRef.current = activeChat;
+  }, [activeChat]);
 
   // Initialize and check auth
   useEffect(() => {
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const token = localStorage.getItem('token');
+      const localUser = localStorage.getItem('user');
+      if (!token || !localUser) {
         toast.warning('Anda harus login untuk menggunakan fitur pesan.');
         navigate('/auth');
         return;
       }
-      setUser(session.user);
-      await fetchConversations(session.user.id);
+      
+      try {
+        const loggedInUser = JSON.parse(localUser);
+        setUser(loggedInUser);
+        await fetchConversations(loggedInUser.id);
+      } catch (err) {
+        toast.warning('Anda harus login untuk menggunakan fitur pesan.');
+        navigate('/auth');
+        return;
+      }
     };
     init();
   }, [navigate]);
 
   // Fetch unique conversations
   const fetchConversations = async (currentUserId) => {
-    // Supabase doesn't easily do "distinct" queries with joins, so we fetch all messages for the user 
-    // and group them in Javascript. In production, an RPC or Edge function is better.
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:users!messages_sender_id_fkey(id, full_name, avatar_url, last_seen),
-        receiver:users!messages_receiver_id_fkey(id, full_name, avatar_url, last_seen)
-      `)
-      .or(`sender_id.eq.${currentUserId},receiver_id.eq.${currentUserId}`)
-      .order('created_at', { ascending: false });
+    const { data, error } = await apiClient.get('/api/messages/conversations');
 
     if (!error && data) {
-      const convMap = new Map();
-      
-      data.forEach(msg => {
-        const isMeSender = msg.sender_id === currentUserId;
-        const otherUser = isMeSender ? msg.receiver : msg.sender;
-        
-        if (!convMap.has(otherUser.id)) {
-          convMap.set(otherUser.id, {
-            user: otherUser,
-            lastMessage: msg.content,
-            time: msg.created_at,
-            unread: !isMeSender && !msg.is_read // Very basic unread logic
-          });
-        }
-      });
-      
-      const convList = Array.from(convMap.values());
-      setConversations(convList);
+      setConversations(data);
 
       // If we came from a specific user link, force open that chat
-      if (targetUserId) {
-        openChatWithUser(targetUserId, currentUserId, convList);
+      if (targetUserId && !activeChatRef.current) {
+        openChatWithUser(targetUserId, currentUserId, data);
       }
     }
     setLoading(false);
@@ -113,7 +101,7 @@ const Messages = () => {
     
     // If not, fetch their details from DB (new chat)
     if (!otherUserData) {
-      const { data } = await supabase.from('users').select('id, full_name, avatar_url, last_seen').eq('id', otherId).single();
+      const { data } = await apiClient.get(`/api/auth/user/${otherId}`);
       if (data) otherUserData = data;
     }
 
@@ -123,20 +111,14 @@ const Messages = () => {
       fetchMessages(currentUserId, otherId);
       
       // Mark messages as read
-      await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('receiver_id', currentUserId)
-        .eq('sender_id', otherId);
+      await apiClient.put('/api/messages/read-all', { senderId: otherId });
+      // Notify Navbar to update badge
+      window.dispatchEvent(new Event('storage'));
     }
   };
 
   const fetchMessages = async (currentUserId, otherId) => {
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${currentUserId})`)
-      .order('created_at', { ascending: true });
+    const { data, error } = await apiClient.get(`/api/messages/history/${otherId}`);
 
     if (!error && data) {
       setMessages(data);
@@ -144,52 +126,53 @@ const Messages = () => {
     }
   };
 
-  // Realtime Subscription
+
+  // Socket.io Real-time connection
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel('public:messages')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, (payload) => {
-        const newMsg = payload.new;
-        // If the message is from the currently active chat
-        if (activeChat && newMsg.sender_id === activeChat.id) {
-          setMessages(prev => [...prev, newMsg]);
-          scrollToBottom();
-          // Mark as read instantly
-          supabase.from('messages').update({ is_read: true }).eq('id', newMsg.id).then();
-        } else {
-          // Otherwise, just refresh conversations to show new unread
-          fetchConversations(user.id);
-        }
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages',
-        filter: `sender_id=eq.${user.id}`
-      }, (payload) => {
-        const updatedMsg = payload.new;
-        setMessages(prev => prev.map(m => m.id === updatedMsg.id ? updatedMsg : m));
-      })
-      .subscribe();
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socket = io(API_BASE_URL);
+    socketRef.current = socket;
+
+    socket.emit('join_user_room', user.id);
+
+    socket.on('receive_message', (msg) => {
+      const active = activeChatRef.current;
+      if (active && (msg.sender_id === active.id || msg.receiver_id === active.id)) {
+        setMessages(prev => [...prev, msg]);
+        scrollToBottom();
+        // Mark as read instantly on server
+        apiClient.put(`/api/messages/read-single/${msg.id}`).then();
+      }
+      fetchConversations(user.id);
+    });
+
+    socket.on('typing', ({ sender_id }) => {
+      const active = activeChatRef.current;
+      if (active && sender_id === active.id) {
+        setIsOtherTyping(true);
+      }
+    });
+
+    socket.on('stop_typing', ({ sender_id }) => {
+      const active = activeChatRef.current;
+      if (active && sender_id === active.id) {
+        setIsOtherTyping(false);
+      }
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      socket.disconnect();
     };
-  }, [user, activeChat]);
+  }, [user]);
 
   // Update current user's last_seen
   useEffect(() => {
     if (!user) return;
     
     const updateLastSeen = async () => {
-      await supabase.from('users').update({ last_seen: new Date().toISOString() }).eq('id', user.id);
+      await apiClient.put('/api/auth/last-seen');
     };
 
     updateLastSeen(); // Initial update
@@ -198,85 +181,29 @@ const Messages = () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // Listen to activeChat's last_seen updates
+  // Periodically fetch activeChat profile info to see dynamic online/offline last_seen updates
   useEffect(() => {
     if (!user || !activeChat) return;
 
-    const channel = supabase
-      .channel('public:users')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'users',
-        filter: `id=eq.${activeChat.id}`
-      }, (payload) => {
-        setActiveChat(prev => ({ ...prev, last_seen: payload.new.last_seen }));
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, activeChat]);
-
-  // Typing indicator via Supabase Broadcast
-  useEffect(() => {
-    if (!user || !activeChat) {
-      // Cleanup old channel
-      if (typingChannelRef.current) {
-        supabase.removeChannel(typingChannelRef.current);
-        typingChannelRef.current = null;
+    const interval = setInterval(async () => {
+      const { data } = await apiClient.get(`/api/auth/user/${activeChat.id}`);
+      if (data) {
+        setActiveChat(prev => ({ ...prev, last_seen: data.last_seen }));
       }
-      return;
-    }
+    }, 15000); // Check every 15 seconds
 
-    // Create a unique room for this pair (sorted IDs so both users join the same room)
-    const roomIds = [user.id, activeChat.id].sort().join('-');
-    const channelName = `typing:${roomIds}`;
-
-    const channel = supabase
-      .channel(channelName)
-      .on('broadcast', { event: 'typing' }, (payload) => {
-        if (payload.payload.userId !== user.id) {
-          setIsOtherTyping(true);
-          // Auto-hide after 2.5 seconds of no typing event
-          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = setTimeout(() => setIsOtherTyping(false), 2500);
-        }
-      })
-      .on('broadcast', { event: 'stop_typing' }, (payload) => {
-        if (payload.payload.userId !== user.id) {
-          setIsOtherTyping(false);
-        }
-      })
-      .subscribe();
-
-    typingChannelRef.current = channel;
-
-    return () => {
-      supabase.removeChannel(channel);
-      typingChannelRef.current = null;
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    };
+    return () => clearInterval(interval);
   }, [user, activeChat]);
 
   const broadcastTyping = () => {
-    if (typingChannelRef.current && user) {
-      typingChannelRef.current.send({
-        type: 'broadcast',
-        event: 'typing',
-        payload: { userId: user.id }
-      });
+    if (socketRef.current && user && activeChat) {
+      socketRef.current.emit('typing', { sender_id: user.id, receiver_id: activeChat.id });
     }
   };
 
   const broadcastStopTyping = () => {
-    if (typingChannelRef.current && user) {
-      typingChannelRef.current.send({
-        type: 'broadcast',
-        event: 'stop_typing',
-        payload: { userId: user.id }
-      });
+    if (socketRef.current && user && activeChat) {
+      socketRef.current.emit('stop_typing', { sender_id: user.id, receiver_id: activeChat.id });
     }
   };
 
@@ -317,47 +244,21 @@ const Messages = () => {
     setMessages(prev => [...prev, optimisticMsg]);
     scrollToBottom();
 
-    const { error } = await supabase
-      .from('messages')
-      .insert([{
-        sender_id: user.id,
-        receiver_id: activeChat.id,
-        content: msgText || (sentImage ? '📷 Foto' : ''),
-        image_url: sentImage || null,
-        item_id: contextItemId || null
-      }]);
+    const { data: savedMsg, error } = await apiClient.post('/api/messages', {
+      receiverId: activeChat.id,
+      content: msgText || (sentImage ? '📷 Foto' : ''),
+      imageUrl: sentImage || null,
+      itemId: contextItemId || null
+    });
 
     if (error) {
       console.error("Error sending message:", error);
-      // In a real app, you'd show an error toast and maybe remove the optimistic message
     } else {
-      fetchConversations(user.id); // Update sidebar last message
-      
-      // Send Push Notification via OneSignal
-      const restApiKey = import.meta.env.VITE_ONESIGNAL_REST_API_KEY;
-      if (restApiKey) {
-        try {
-          await fetch('https://onesignal.com/api/v1/notifications', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Basic ${restApiKey}`
-            },
-            body: JSON.stringify({
-              app_id: "8d8d85b2-6aeb-4b2b-8521-2abe43cde32a",
-              include_aliases: {
-                external_id: [activeChat.id]
-              },
-              target_channel: "push",
-              headings: { "en": `Pesan Baru` },
-              contents: { "en": msgText || '📷 Mengirim foto' },
-              url: `${window.location.origin}/messages?userId=${user.id}`
-            })
-          });
-        } catch (pushErr) {
-          console.error("Error sending push notification:", pushErr);
-        }
+      // Broadcast via socket to receiver instantly
+      if (socketRef.current) {
+        socketRef.current.emit('send_message', savedMsg);
       }
+      fetchConversations(user.id);
     }
 
     // Anti-spam cooldown 500ms
@@ -365,7 +266,7 @@ const Messages = () => {
   };
 
   const handleDeleteMessage = async (msgId) => {
-    const { error } = await supabase.from('messages').delete().eq('id', msgId);
+    const { error } = await apiClient.delete(`/api/messages/${msgId}`);
     if (!error) {
       setMessages(prev => prev.filter(m => m.id !== msgId));
       fetchConversations(user.id);
@@ -378,10 +279,7 @@ const Messages = () => {
   const handleDeleteConversation = async () => {
     if (!activeChat || !user) return;
 
-    const { error } = await supabase
-      .from('messages')
-      .delete()
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${activeChat.id}),and(sender_id.eq.${activeChat.id},receiver_id.eq.${user.id})`);
+    const { error } = await apiClient.delete(`/api/messages/conversation/${activeChat.id}`);
 
     if (!error) {
       setMessages([]);

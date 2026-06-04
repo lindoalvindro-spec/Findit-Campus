@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useSearchParams } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 
 const FoundItems = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,11 +25,7 @@ const FoundItems = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      const { data, error } = await supabase
-        .from('lost_items')
-        .select('*')
-        .eq('status', 'found')
-        .order('created_at', { ascending: false });
+      const { data, error } = await apiClient.get('/api/items?status=found');
       
       if (!error && data) {
         setItems(data);
@@ -41,6 +37,7 @@ const FoundItems = () => {
 
     fetchItems();
   }, []);
+
 
   const filteredItems = items.filter(item => {
     const matchQuery = (item.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 

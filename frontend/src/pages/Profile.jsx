@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { supabase } from '../supabaseClient';
+import { apiClient } from '../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
@@ -27,48 +27,34 @@ const Profile = () => {
 
   useEffect(() => {
     const initProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const token = localStorage.getItem('token');
+      const localUser = localStorage.getItem('user');
+      if (!token || !localUser) {
         toast.warning('Silakan login terlebih dahulu untuk mengakses profil.');
         navigate('/auth');
         return;
       }
       
-      setUser(session.user);
-      setEmail(session.user.email);
-
-      // Fetch or create profile details
-      let { data: profile, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      // If user doesn't exist in users table, create it
-      if (error && error.code === 'PGRST116') {
-        const { data: newProfile, error: insertError } = await supabase
-          .from('users')
-          .insert([{
-            id: session.user.id,
-            email: session.user.email,
-            full_name: session.user.user_metadata?.full_name || '',
-            avatar_url: ''
-          }])
-          .select()
-          .single();
-        
-        if (!insertError && newProfile) {
-          profile = newProfile;
-        }
+      let loggedInUser;
+      try {
+        loggedInUser = JSON.parse(localUser);
+        setUser(loggedInUser);
+        setEmail(loggedInUser.email);
+      } catch (e) {
+        toast.warning('Silakan login terlebih dahulu untuk mengakses profil.');
+        navigate('/auth');
+        return;
       }
+      
+      const { data: profile, error } = await apiClient.get('/api/auth/me');
 
-      if (profile) {
-        setFullName(profile.full_name || '');
-        setAvatarUrl(profile.avatar_url || '');
+      if (!error && profile) {
+        setFullName(profile.fullName || profile.full_name || '');
+        setAvatarUrl(profile.avatarUrl || profile.avatar_url || '');
       }
 
       setLoading(false);
-      fetchMyReports(session.user.id);
+      fetchMyReports(loggedInUser.id);
     };
 
     initProfile();
@@ -76,17 +62,14 @@ const Profile = () => {
 
   const fetchMyReports = async (userId) => {
     setLoadingReports(true);
-    const { data, error } = await supabase
-      .from('lost_items')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    const { data, error } = await apiClient.get(`/api/items?userId=${userId}`);
 
     if (!error && data) {
       setMyReports(data);
     }
     setLoadingReports(false);
   };
+
 
   // Profile Edit Handlers
   const handleImageChange = (e) => {
@@ -108,22 +91,18 @@ const Profile = () => {
     e.preventDefault();
     setSavingProfile(true);
     
-    // Use upsert to handle both insert and update
-    const { error } = await supabase
-      .from('users')
-      .upsert({ 
-        id: user.id,
-        email: user.email,
-        full_name: fullName, 
-        avatar_url: avatarUrl
-      }, {
-        onConflict: 'id'
-      });
+    const { data, error } = await apiClient.put('/api/auth/profile', { 
+      fullName, 
+      avatarUrl
+    });
 
     setSavingProfile(false);
     if (error) {
       toast.error('Gagal memperbarui profil: ' + error.message);
     } else {
+      if (data && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
       toast.success('Profil berhasil diperbarui!');
       setIsEditingProfile(false);
       window.location.reload(); // Refresh navbar avatar
@@ -131,9 +110,11 @@ const Profile = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/auth');
   };
+
 
   // CRUD Handlers for Reports
   const handleDeleteReport = async (id) => {
@@ -145,7 +126,7 @@ const Profile = () => {
       type: 'danger'
     });
     if (yes) {
-      const { error } = await supabase.from('lost_items').delete().eq('id', id);
+      const { error } = await apiClient.delete(`/api/items/${id}`);
       if (error) {
         toast.error('Gagal menghapus laporan: ' + error.message);
       } else {
@@ -167,10 +148,9 @@ const Profile = () => {
       type: 'info'
     });
     if (yes) {
-      const { error } = await supabase
-        .from('lost_items')
-        .update({ status: 'returned' })
-        .eq('id', id);
+      const { error } = await apiClient.put(`/api/items/${id}`, {
+        status: 'returned'
+      });
         
       if (error) {
         toast.error('Gagal memperbarui status: ' + error.message);
