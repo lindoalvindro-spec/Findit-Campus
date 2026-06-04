@@ -370,7 +370,7 @@ const Home = () => {
                 whileHover={{ y: -10 }}
                 className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
-                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,40,142,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   01
                 </div>
                 <motion.div 
@@ -398,7 +398,7 @@ const Home = () => {
                 whileHover={{ y: -10 }}
                 className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-secondary/30 hover:bg-secondary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
-                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-secondary group-hover:drop-shadow-[0_0_12px_rgba(0,108,74,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   02
                 </div>
                 <motion.div 
@@ -426,7 +426,7 @@ const Home = () => {
                 whileHover={{ y: -10 }}
                 className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-tertiary/30 hover:bg-tertiary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
-                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 select-none absolute top-6 right-8">
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-tertiary group-hover:drop-shadow-[0_0_12px_rgba(97,30,0,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   03
                 </div>
                 <motion.div 
