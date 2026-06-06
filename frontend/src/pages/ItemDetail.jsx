@@ -140,6 +140,13 @@ const ItemDetail = () => {
                   <p className="font-body-md text-body-md text-on-surface">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : 'Tidak diketahui'}</p>
                 </div>
               </div>
+              <div className="flex items-start gap-sm col-span-1 sm:col-span-2 border-t border-outline-variant/30 pt-sm mt-xs">
+                <span className="material-symbols-outlined text-outline text-primary">school</span>
+                <div>
+                  <p className="font-label-sm text-label-sm text-outline">Lokasi Kampus</p>
+                  <p className="font-body-md text-body-md text-on-surface">{item.campus || 'UIN Suska Riau'}</p>
+                </div>
+              </div>
             </div>
 
             {/* Description */}

@@ -5,6 +5,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
 import { motion } from 'framer-motion';
 import { CardSkeleton } from '../components/LoadingSkeleton';
+import uinLogo from '../assets/uin.png';
+import unriLogo from '../assets/unri.png';
+import uirLogo from '../assets/uir.png';
+import umriLogo from '../assets/umri.jpg';
 
 const Home = () => {
   const [lostItems, setLostItems] = useState([]);
@@ -13,6 +17,14 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   
+  const campuses = [
+    { name: 'UIN Suska Riau', displayName: 'UIN Suska Riau', logo: uinLogo },
+    { name: 'Universitas Riau (UNRI)', displayName: 'Universitas Riau (UNRI)', logo: unriLogo },
+    { name: 'Universitas Islam Riau (UIR)', displayName: 'Universitas Islam Riau (UIR)', logo: uirLogo },
+    { name: 'Universitas Muhammadiyah Riau (UMRI)', displayName: 'Universitas Muhammadiyah Riau (UMRI)', logo: umriLogo },
+    { name: 'Lainnya', displayName: 'Kampus Lainnya', logo: null }
+  ];
+
   // Real database stats state
   const [stats, setStats] = useState({
     total: 0,
@@ -314,6 +326,42 @@ const Home = () => {
                 <div className="font-label-md text-label-md text-on-surface-variant">Tingkat Sukses</div>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* Search by Campus */}
+        <section className="py-16 bg-surface-container-low">
+          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
+            <div className="mb-12 text-center">
+              <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Jelajahi Kampus</span>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface">Cari Berdasarkan Kampus</h2>
+              <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+              {campuses.map((campus) => (
+                <motion.div
+                  key={campus.name}
+                  whileHover={{ y: -8, scale: 1.03 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  onClick={() => navigate(`/lost-items?campus=${encodeURIComponent(campus.name)}`)}
+                  className="bg-surface rounded-2xl border border-outline-variant p-6 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl hover:border-primary/30 transition-all group"
+                >
+                  <div className="w-24 h-24 flex items-center justify-center mb-4 p-2 rounded-xl bg-surface-container-high/50 group-hover:bg-primary/5 transition-colors">
+                    {campus.logo ? (
+                      <img src={campus.logo} alt={campus.name} className="max-w-full max-h-full object-contain" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                        <span className="material-symbols-outlined text-4xl">school</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                    {campus.displayName}
+                  </h3>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
 

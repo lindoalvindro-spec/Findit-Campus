@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 // Get all items with optional filters
 exports.getItems = async (req, res) => {
-  const { status, search, userId } = req.query;
+  const { status, search, userId, campus } = req.query;
   let queryText = `
     SELECT li.*, 
            json_build_object('id', u.id, 'full_name', u.full_name, 'avatar_url', u.avatar_url) as users
@@ -20,6 +20,11 @@ exports.getItems = async (req, res) => {
   if (userId) {
     queryParams.push(userId);
     conditions.push(`li.user_id = $${queryParams.length}`);
+  }
+
+  if (campus) {
+    queryParams.push(campus);
+    conditions.push(`li.campus = $${queryParams.length}`);
   }
 
   if (search) {
@@ -69,7 +74,7 @@ exports.getItemById = async (req, res) => {
 
 // Create new item report
 exports.createItem = async (req, res) => {
-  const { title, description, location, date_lost, time_lost, category, image_url, status } = req.body;
+  const { title, description, location, date_lost, time_lost, category, image_url, status, campus } = req.body;
   const userId = req.user.id; // From authMiddleware
 
   if (!title) {
@@ -78,8 +83,8 @@ exports.createItem = async (req, res) => {
 
   try {
     const queryText = `
-      INSERT INTO lost_items (user_id, title, description, location, date_lost, time_lost, category, image_url, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO lost_items (user_id, title, description, location, date_lost, time_lost, category, image_url, status, campus)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
     const values = [
@@ -91,7 +96,8 @@ exports.createItem = async (req, res) => {
       time_lost || null,
       category || null,
       image_url || null,
-      status || 'lost'
+      status || 'lost',
+      campus || 'UIN Suska Riau'
     ];
     const result = await db.query(queryText, values);
 
@@ -108,7 +114,7 @@ exports.createItem = async (req, res) => {
 // Update item report
 exports.updateItem = async (req, res) => {
   const { id } = req.params;
-  const { title, description, location, date_lost, time_lost, category, image_url, status } = req.body;
+  const { title, description, location, date_lost, time_lost, category, image_url, status, campus } = req.body;
   const userId = req.user.id;
 
   try {
@@ -135,8 +141,9 @@ exports.updateItem = async (req, res) => {
           time_lost = $5,
           category = $6,
           image_url = $7,
-          status = $8
-      WHERE id = $9
+          status = $8,
+          campus = $9
+      WHERE id = $10
       RETURNING *
     `;
     const values = [
@@ -148,6 +155,7 @@ exports.updateItem = async (req, res) => {
       category !== undefined ? category : existing.category,
       image_url !== undefined ? image_url : existing.image_url,
       status !== undefined ? status : existing.status,
+      campus !== undefined ? campus : existing.campus,
       id
     ];
     const result = await db.query(queryText, values);

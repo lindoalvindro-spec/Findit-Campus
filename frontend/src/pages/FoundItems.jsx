@@ -3,25 +3,41 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
+import uinLogo from '../assets/uin.png';
+import unriLogo from '../assets/unri.png';
+import uirLogo from '../assets/uir.png';
+import umriLogo from '../assets/umri.jpg';
 
 const FoundItems = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
+  const initialCampus = searchParams.get('campus') || '';
   
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [campusFilter, setCampusFilter] = useState(initialCampus);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 7;
+
+  const campuses = [
+    { name: '', displayName: 'Semua Kampus', logo: null, icon: 'location_city' },
+    { name: 'UIN Suska Riau', displayName: 'UIN Suska Riau', logo: uinLogo },
+    { name: 'Universitas Riau (UNRI)', displayName: 'UNRI', logo: unriLogo },
+    { name: 'Universitas Islam Riau (UIR)', displayName: 'UIR', logo: uirLogo },
+    { name: 'Universitas Muhammadiyah Riau (UMRI)', displayName: 'UMRI', logo: umriLogo },
+    { name: 'Lainnya', displayName: 'Lainnya', logo: null, icon: 'school' }
+  ];
   
-  // Perbarui parameter URL ketika searchQuery berubah
+  // Perbarui parameter URL ketika searchQuery atau campusFilter berubah
   useEffect(() => {
     const params = {};
     if (searchQuery) params.q = searchQuery;
+    if (campusFilter) params.campus = campusFilter;
     setSearchParams(params, { replace: true });
-  }, [searchQuery, setSearchParams]);
+  }, [searchQuery, campusFilter, setSearchParams]);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -45,8 +61,11 @@ const FoundItems = () => {
     
     // Asumsi category di DB berupa string, kita cek substring saja
     const matchCategory = categoryFilter ? (item.category?.toLowerCase() || '').includes(categoryFilter.toLowerCase()) : true;
+
+    // Filter berdasarkan kampus
+    const matchCampus = campusFilter ? item.campus === campusFilter : true;
     
-    return matchQuery && matchCategory;
+    return matchQuery && matchCategory && matchCampus;
   });
 
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
@@ -58,7 +77,7 @@ const FoundItems = () => {
   // Reset page when search/filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, categoryFilter]);
+  }, [searchQuery, categoryFilter, campusFilter]);
 
   return (
     <div className="bg-background text-on-background font-body-md min-h-screen flex flex-col">
@@ -122,6 +141,31 @@ const FoundItems = () => {
           </div>
         </div>
 
+        {/* Campus Filter Pills */}
+        <div className="mb-lg overflow-x-auto flex items-center gap-sm py-xs scrollbar-thin scrollbar-thumb-outline-variant">
+          {campuses.map((campus) => {
+            const isActive = campusFilter === campus.name;
+            return (
+              <button
+                key={campus.name}
+                onClick={() => setCampusFilter(campus.name)}
+                className={`flex items-center gap-xs px-md py-sm rounded-full border text-body-sm font-label-md transition-all whitespace-nowrap shrink-0 ${
+                  isActive
+                    ? 'bg-secondary text-on-secondary border-secondary shadow-sm font-semibold'
+                    : 'bg-surface text-on-surface-variant border-outline-variant hover:bg-surface-container-high'
+                }`}
+              >
+                {campus.logo ? (
+                  <img src={campus.logo} alt={campus.name} className="w-5 h-5 object-contain rounded-full" />
+                ) : (
+                  <span className="material-symbols-outlined text-[20px]">{campus.icon || 'school'}</span>
+                )}
+                <span>{campus.displayName}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Items Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter mb-xl">
           {loading ? (
@@ -153,6 +197,10 @@ const FoundItems = () => {
                   <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs line-clamp-1 group-hover:text-secondary transition-colors">{item.title}</h3>
                   <p className="font-body-sm text-body-sm text-on-surface-variant mb-md line-clamp-2">{item.description || 'Tidak ada deskripsi'}</p>
                   <div className="mt-auto space-y-2">
+                    <div className="flex items-center text-on-surface-variant font-body-sm text-body-sm">
+                      <span className="material-symbols-outlined text-[18px] mr-2 text-secondary">school</span>
+                      <span className="truncate">{item.campus || 'UIN Suska Riau'}</span>
+                    </div>
                     <div className="flex items-center text-on-surface-variant font-body-sm text-body-sm">
                       <span className="material-symbols-outlined text-[18px] mr-2">location_on</span>
                       <span className="truncate">{item.location || 'Lokasi tidak diketahui'}</span>

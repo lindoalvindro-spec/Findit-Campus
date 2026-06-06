@@ -22,6 +22,7 @@ const CreateReport = () => {
     category: '',
     date: '',
     time: '',
+    campus: 'UIN Suska Riau',
     location: '',
     description: '',
     imageUrl: ''
@@ -69,6 +70,7 @@ const CreateReport = () => {
             category: data.category || '',
             date: data.date_lost || '',
             time: data.time_lost || '',
+            campus: data.campus || 'UIN Suska Riau',
             location: data.location || '',
             description: data.description || '',
             imageUrl: data.image_url || ''
@@ -129,7 +131,8 @@ const CreateReport = () => {
       time_lost: formData.time,
       category: formData.category,
       status: formData.report_type,
-      image_url: formData.imageUrl
+      image_url: formData.imageUrl,
+      campus: formData.campus
     };
 
     let responseError;
@@ -283,6 +286,30 @@ const CreateReport = () => {
                     required 
                     type="time" 
                   />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label className="font-label-md text-label-md text-on-surface mb-xs block" htmlFor="campus">Pilih Kampus <span className="text-error">*</span></label>
+                  <div className="relative">
+                    <select 
+                      value={formData.campus}
+                      onChange={handleChange}
+                      className="w-full appearance-none rounded-DEFAULT border border-outline-variant bg-surface px-md py-sm pr-10 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all shadow-[0_1px_2px_rgba(0,0,0,0.05)]" 
+                      id="campus" 
+                      name="campus" 
+                      required
+                    >
+                      <option disabled value="">Pilih Kampus</option>
+                      <option value="UIN Suska Riau">UIN Suska Riau</option>
+                      <option value="Universitas Riau (UNRI)">Universitas Riau (UNRI)</option>
+                      <option value="Universitas Islam Riau (UIR)">Universitas Islam Riau (UIR)</option>
+                      <option value="Universitas Muhammadiyah Riau (UMRI)">Universitas Muhammadiyah Riau (UMRI)</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-sm text-on-surface-variant">
+                      <span className="material-symbols-outlined">expand_more</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="md:col-span-2">
