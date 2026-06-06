@@ -83,7 +83,11 @@ const Auth = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/80 to-transparent z-0"></div>
         <div className="relative z-10">
           <h1 className="font-headline-lg text-headline-lg text-primary flex items-center gap-sm">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: "36px" }}>school</span>
+            <svg className="w-10 h-10 text-primary" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M100 20C70 20 45 45 45 75C45 115 100 170 100 170C100 170 155 115 155 75C155 45 130 20 100 20Z" stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+              <circle cx="100" cy="75" r="25" stroke="currentColor" strokeWidth="10"/>
+              <path d="M118 93L135 110" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/>
+            </svg>
             FindIt Campus
           </h1>
         </div>
@@ -99,8 +103,12 @@ const Auth = () => {
           
           {/* Mobile Logo */}
           <div className="lg:hidden mb-xl text-center">
-            <h1 className="font-headline-md text-headline-md text-primary inline-flex items-center gap-xs">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
+            <h1 className="font-headline-md text-headline-md text-primary inline-flex items-center gap-xs justify-center">
+              <svg className="w-8 h-8 text-primary" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 20C70 20 45 45 45 75C45 115 100 170 100 170C100 170 155 115 155 75C155 45 130 20 100 20Z" stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="100" cy="75" r="25" stroke="currentColor" strokeWidth="10"/>
+                <path d="M118 93L135 110" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/>
+              </svg>
               FindIt Campus
             </h1>
           </div>
