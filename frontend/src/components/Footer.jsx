@@ -86,13 +86,22 @@ const Footer = () => {
             className="md:col-span-7 flex flex-col gap-4"
           >
             <div className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim flex items-center gap-2">
-              <motion.span 
-                whileHover={{ rotate: 360 }}
+              <motion.div 
+                whileHover={{ rotate: 360, scale: 1.05 }}
                 transition={{ duration: 0.6 }}
-                className="material-symbols-outlined text-[36px] bg-primary/10 text-primary p-2 rounded-xl cursor-pointer"
+                className="bg-primary/10 p-2 rounded-xl cursor-pointer"
               >
-                travel_explore
-              </motion.span>
+                <svg 
+                  className="w-9 h-9 text-primary" 
+                  viewBox="0 0 200 200" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M100 20C70 20 45 45 45 75C45 115 100 170 100 170C100 170 155 115 155 75C155 45 130 20 100 20Z" stroke="currentColor" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="100" cy="75" r="25" stroke="currentColor" strokeWidth="10"/>
+                  <path d="M118 93L135 110" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/>
+                </svg>
+              </motion.div>
               FindIt Campus
             </div>
             <p className="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant max-w-[360px] leading-relaxed mt-2">
