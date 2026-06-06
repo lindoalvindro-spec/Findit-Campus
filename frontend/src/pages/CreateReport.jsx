@@ -432,7 +432,7 @@ const CreateReport = () => {
                   <span className="material-symbols-outlined text-outline mt-1 text-base">update</span>
                   <div>
                     <h3 className="font-label-md text-label-md text-on-surface">Perbarui Status</h3>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-xs">Jika barang sudah ditemukan atau dikembalikan, segera perbarui status laporan Anda di halaman "My Reports".</p>
+                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-xs">Jika barang sudah ditemukan atau dikembalikan, segera perbarui status laporan Anda di halaman "Dasbor Laporan".</p>
                   </div>
                 </li>
               </ul>
