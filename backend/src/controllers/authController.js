@@ -79,6 +79,9 @@ exports.login = async (req, res) => {
     const user = userResult.rows[0];
 
     // Check password
+    if (!user.password_hash) {
+      return res.status(400).json({ message: 'Email atau password salah.' });
+    }
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) {
       return res.status(400).json({ message: 'Email atau password salah.' });
