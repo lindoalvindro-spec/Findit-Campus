@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '../services/apiClient';
 import { io } from 'socket.io-client';
 
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const prevUnreadRef = useRef(0);
 
   const handleLogout = async () => {
@@ -227,8 +228,40 @@ const Navbar = () => {
               </Link>
             </motion.div>
           )}
+
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            className="md:hidden text-on-surface-variant hover:text-primary p-2 focus:outline-none transition-colors"
+            title="Menu"
+          >
+            <span className="material-symbols-outlined text-[28px]">
+              {isMobileMenuOpen ? 'close' : 'menu'}
+            </span>
+          </button>
         </div>
       </div>
+
+      {/* Mobile Dropdown Drawer */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="md:hidden bg-surface dark:bg-on-background border-t border-outline-variant dark:border-outline px-margin-mobile py-4 flex flex-col gap-3 shadow-md overflow-hidden"
+          >
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="font-label-md text-label-md text-on-surface dark:text-outline-variant hover:text-primary py-2 border-b border-outline-variant/30 transition-colors">Beranda</Link>
+            <Link to="/lost-items" onClick={() => setIsMobileMenuOpen(false)} className="font-label-md text-label-md text-on-surface dark:text-outline-variant hover:text-primary py-2 border-b border-outline-variant/30 transition-colors">Barang Hilang</Link>
+            <Link to="/found-items" onClick={() => setIsMobileMenuOpen(false)} className="font-label-md text-label-md text-on-surface dark:text-outline-variant hover:text-primary py-2 border-b border-outline-variant/30 transition-colors">Barang Ditemukan</Link>
+            <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="font-label-md text-label-md text-on-surface dark:text-outline-variant hover:text-primary py-2 border-b border-outline-variant/30 transition-colors">Dasbor Laporan</Link>
+            <Link to="/create-report" onClick={() => setIsMobileMenuOpen(false)} className="bg-primary text-on-primary text-center py-2.5 rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors mt-2">
+              Buat Laporan
+            </Link>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 };
