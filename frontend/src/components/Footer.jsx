@@ -30,9 +30,9 @@ const Footer = () => {
 
   const socialLinks = [
     { 
-      icon: 'language', 
-      label: 'Website', 
-      href: 'https://github.com/lindoalvindro-spec/Findit-Campus', 
+      icon: 'support_agent', 
+      label: 'Pusat Bantuan', 
+      href: 'https://wa.me/6287866272028?text=Halo%20Admin%20FindIt%20Campus%2C%20saya%20butuh%20bantuan%20terkait%20penggunaan%20aplikasi.', 
       target: '_blank', 
       rel: 'noopener noreferrer' 
     },
@@ -42,9 +42,11 @@ const Footer = () => {
       onClick: handleShare 
     },
     { 
-      icon: 'mail', 
-      label: 'Email', 
-      href: 'mailto:lindoalvindro@gmail.com?subject=Tanya%20FindIt%20Campus' 
+      icon: 'chat', 
+      label: 'WhatsApp Admin', 
+      href: 'https://wa.me/6287866272028?text=Halo%20Admin%20FindIt%20Campus%2C%20saya%20ingin%20melaporkan%20kendala%20sistem.',
+      target: '_blank', 
+      rel: 'noopener noreferrer' 
     }
   ];
 
