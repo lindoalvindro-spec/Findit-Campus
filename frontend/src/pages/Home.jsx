@@ -15,6 +15,8 @@ const Home = () => {
   const [foundItems, setFoundItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState('lost'); // 'lost' or 'found'
+  const [latestItem, setLatestItem] = useState(null);
   const navigate = useNavigate();
   
   const campuses = [
@@ -62,6 +64,10 @@ const Home = () => {
             returned,
             successRate
           });
+
+          if (allItems.length > 0) {
+            setLatestItem(allItems[0]);
+          }
         }
       } catch (err) {
         console.error("Gagal memuat statistik database:", err);
@@ -75,10 +81,11 @@ const Home = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    const targetPath = searchType === 'lost' ? '/lost-items' : '/found-items';
     if (searchQuery.trim()) {
-      navigate(`/lost-items?q=${encodeURIComponent(searchQuery.trim())}`);
+      navigate(`${targetPath}?q=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      navigate('/lost-items');
+      navigate(targetPath);
     }
   };
 
@@ -88,62 +95,280 @@ const Home = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative bg-surface-container-low overflow-hidden py-24 md:py-32">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto relative z-10 flex flex-col items-center text-center"
-          >
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="font-headline-xl text-headline-xl text-primary mb-4 max-w-3xl"
-            >
-              Temukan Barangmu, Bantu Temanmu.
-            </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl"
-            >
-              Platform resmi pencarian barang hilang dan temuan di area kampus.
-            </motion.p>
-            
-            {/* Search Bar */}
-            <motion.form 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              onSubmit={handleSearch} 
-              className="w-full max-w-2xl bg-surface rounded-full shadow-sm border border-outline-variant flex items-center p-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-fixed transition-all hover:shadow-md"
-            >
-              <motion.span 
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                className="material-symbols-outlined text-outline ml-4"
+        <section className="relative bg-gradient-to-b from-surface-container-low via-surface-container-low to-surface overflow-hidden py-20 lg:py-28">
+          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              
+              {/* Left Column: Content & Search */}
+              <motion.div 
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left"
               >
-                search
-              </motion.span>
-              <input 
-                className="flex-grow bg-transparent border-none focus:ring-0 font-body-md text-body-md px-4 text-on-surface placeholder:text-outline focus:outline-none" 
-                placeholder="Cari barang hilang atau temuan..." 
-                type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <motion.button 
-                type="submit" 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors"
+                <motion.h1 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="font-headline-xl text-headline-xl text-on-surface mb-6 max-w-[672px] leading-tight font-bold"
+                >
+                  Temukan Barangmu, <br className="hidden sm:inline" />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-surface-tint to-[#2563eb]">
+                    Bantu Temanmu.
+                  </span>
+                </motion.h1>
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="font-body-lg text-body-lg text-on-surface-variant/90 mb-8 max-w-[576px] leading-relaxed font-medium"
+                >
+                  Platform resmi pencarian barang hilang dan temuan di area kampus. Laporkan barang yang hilang atau serahkan temuan Anda secara aman.
+                </motion.p>
+                
+                {/* Search Type Selector */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.35 }}
+                  className="flex gap-2 mb-4 bg-surface-container-low/60 p-1 rounded-full border border-outline-variant/40"
+                >
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchType('lost')}
+                    className={`px-5 py-2 rounded-full font-label-md text-label-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      searchType === 'lost' 
+                        ? 'bg-primary text-on-primary shadow-sm' 
+                        : 'text-on-surface-variant hover:bg-surface-container-high/60'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">search</span>
+                    Barang Hilang
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setSearchType('found')}
+                    className={`px-5 py-2 rounded-full font-label-md text-label-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      searchType === 'found' 
+                        ? 'bg-secondary text-on-secondary shadow-sm' 
+                        : 'text-on-surface-variant hover:bg-surface-container-high/60'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    Barang Temuan
+                  </button>
+                </motion.div>
+
+                {/* Search Bar */}
+                <motion.form 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  onSubmit={handleSearch} 
+                  className={`w-full max-w-[576px] bg-surface/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.06)] border flex items-center p-2.5 pl-3 transition-all hover:shadow-[0_12px_40px_rgb(0,0,0,0.12)] hover:border-outline-variant ${
+                    searchType === 'lost'
+                      ? 'border-outline-variant/80 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-fixed'
+                      : 'border-outline-variant/80 focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary-fixed'
+                  }`}
+                >
+                  <span className={`material-symbols-outlined ml-3 select-none transition-colors duration-200 ${
+                    searchType === 'lost' ? 'text-primary' : 'text-secondary'
+                  }`}>
+                    search
+                  </span>
+                  <input 
+                    className="flex-grow bg-transparent border-none focus:ring-0 font-body-md text-body-md px-3 text-on-surface placeholder:text-outline focus:outline-none" 
+                    placeholder={searchType === 'lost' ? "Cari barang hilang..." : "Cari barang temuan..."} 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <motion.button 
+                    type="submit" 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`px-8 py-2.5 rounded-full font-label-md text-label-md transition-all shadow-sm hover:shadow-md cursor-pointer ${
+                      searchType === 'lost'
+                        ? 'bg-primary text-on-primary hover:bg-primary-container hover:text-on-primary-container'
+                        : 'bg-secondary text-on-secondary hover:bg-secondary-container hover:text-on-secondary-container'
+                    }`}
+                  >
+                    Cari
+                  </motion.button>
+                </motion.form>
+
+                {/* Popular Search Tags */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                  className="flex flex-wrap gap-2 mt-5 items-center justify-center lg:justify-start"
+                >
+                  <span className="font-label-sm text-label-sm text-outline">Pencarian populer:</span>
+                  {['Kunci', 'KTM', 'Dompet', 'Charger', 'Almamater'].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(tag);
+                        const targetPath = searchType === 'lost' ? '/lost-items' : '/found-items';
+                        navigate(`${targetPath}?q=${encodeURIComponent(tag)}`);
+                      }}
+                      className={`px-3 py-1 rounded-full border border-outline-variant/60 bg-surface/40 transition-all text-xs font-medium text-on-surface-variant cursor-pointer ${
+                        searchType === 'lost' 
+                          ? 'hover:border-primary hover:text-primary' 
+                          : 'hover:border-secondary hover:text-secondary'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Right Column: Premium Interactive Mockup */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="lg:col-span-5 flex items-center justify-center relative min-h-[360px]"
               >
-                Cari
-              </motion.button>
-            </motion.form>
-          </motion.div>
+                {loading ? (
+                  /* Skeleton Card Mockup during Loading */
+                  <div className="relative w-full max-w-[340px]">
+                    <div className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-full">
+                      <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-outline-variant/35 animate-pulse"></span>
+                          <span className="w-3 h-3 rounded-full bg-outline-variant/35 animate-pulse"></span>
+                          <span className="w-3 h-3 rounded-full bg-outline-variant/35 animate-pulse"></span>
+                        </div>
+                        <span className="text-[11px] font-bold tracking-widest text-outline/45 uppercase animate-pulse">FindIt Preview</span>
+                      </div>
+
+                      <div className="rounded-2xl overflow-hidden h-40 bg-surface-container-high/40 relative mb-4 animate-pulse flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[54px] text-outline/25">badge</span>
+                      </div>
+
+                      <div className="h-5 bg-outline-variant/30 rounded-lg w-2/3 mb-3 animate-pulse"></div>
+                      <div className="h-4 bg-outline-variant/20 rounded-lg w-1/2 mb-2 animate-pulse"></div>
+                      <div className="h-4 bg-outline-variant/20 rounded-lg w-1/3 mb-4 animate-pulse"></div>
+                      <div className="w-full h-2 bg-outline-variant/20 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Floating Mockup Stack */
+                  <motion.div 
+                    animate={{ y: [0, -12, 0] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative w-full max-w-[340px]"
+                  >
+                    {/* Base App Card Mockup */}
+                    <Link 
+                      to={latestItem ? `/item-detail?id=${latestItem.id}` : '/'} 
+                      className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 hover:border-primary/50 transition-all group/card cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full bg-error"></span>
+                          <span className="w-3 h-3 rounded-full bg-warning"></span>
+                          <span className="w-3 h-3 rounded-full bg-success"></span>
+                        </div>
+                        <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
+                      </div>
+
+                      <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4">
+                        {latestItem ? (
+                          <>
+                            <div className={`absolute top-3 right-3 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm ${
+                              latestItem.status === 'lost' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'
+                            }`}>
+                              {latestItem.status === 'lost' ? 'Hilang' : 'Ditemukan'}
+                            </div>
+                            {latestItem.image_url ? (
+                              <img src={latestItem.image_url} alt={latestItem.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-surface-container-high">
+                                <span className="material-symbols-outlined text-[54px] text-primary/30">
+                                  {latestItem.category === 'Kartu/Dokumen' || latestItem.title.toLowerCase().includes('ktm') ? 'badge' : 'inventory_2'}
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
+                              Ditemukan
+                            </div>
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-surface-container-high">
+                              <span className="material-symbols-outlined text-[54px] text-primary/30">badge</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1 truncate group-hover/card:text-primary transition-colors">
+                        {latestItem ? latestItem.title : "KTM Mahasiswa - UIN Suska"}
+                      </h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1 truncate">
+                        <span className="material-symbols-outlined text-sm text-outline">location_on</span>
+                        {latestItem ? (latestItem.location || 'Area Kampus') : "Perpustakaan Gedung Rektorat"}
+                      </p>
+                      <p className="font-body-sm text-body-sm text-outline flex items-center gap-1 mb-3 truncate">
+                        <span className="material-symbols-outlined text-sm">school</span>
+                        {latestItem ? (latestItem.campus || 'UIN Suska Riau') : "UIN Suska Riau"}
+                      </p>
+                      <div className="w-full h-2 bg-outline-variant/30 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: "98%" }}
+                          transition={{ duration: 1.5, delay: 0.8 }}
+                          className="h-full bg-primary"
+                        ></motion.div>
+                      </div>
+                    </Link>
+
+                    {/* Overlapping Chat Bubble Mockup */}
+                    <motion.div 
+                      animate={{ y: [0, 6, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                      className="absolute -bottom-6 -left-8 bg-primary text-on-primary rounded-2xl rounded-bl-none p-3.5 shadow-[0_10px_25px_rgba(0,40,142,0.15)] text-[12px] max-w-[210px] z-20 border border-primary-container"
+                    >
+                      <div className="font-bold text-[10px] opacity-75 mb-1">
+                        {latestItem ? (latestItem.users?.full_name || 'Pengguna') : 'Rizki Amanda'} ({latestItem && latestItem.status === 'lost' ? 'Owner' : 'Finder'})
+                      </div>
+                      {latestItem ? (
+                        latestItem.status === 'lost' 
+                          ? `"${latestItem.users?.full_name || 'Saya'} membuat laporan kehilangan barang ini, mohon hubungi jika ada info..."`
+                          : `"${latestItem.users?.full_name || 'Saya'} melaporkan penemuan barang ini, silakan hubungi untuk serah terima..."`
+                      ) : (
+                        `"Halo! Saya menemukan KTM Anda tergeletak di meja perpus lantai 2..."`
+                      )}
+                    </motion.div>
+
+                    {/* Overlapping AI Match Badge */}
+                    <motion.div 
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                      className={`absolute -top-8 -right-6 rounded-2xl p-3 shadow-[0_10px_25px_rgba(0,0,0,0.08)] text-xs font-semibold z-20 border flex items-center gap-2 ${
+                        latestItem && latestItem.status === 'lost' 
+                          ? 'bg-error-container text-on-error-container border-error/20' 
+                          : 'bg-secondary-container text-on-secondary-container border-secondary/20'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-lg ${
+                        latestItem && latestItem.status === 'lost' ? 'text-error' : 'text-secondary'
+                      }`}>
+                        new_releases
+                      </span>
+                      {latestItem && latestItem.status === 'lost' ? 'Laporan Hilang Terbaru' : 'Laporan Temuan Terbaru'}
+                    </motion.div>
+                  </motion.div>
+                )}
+              </motion.div>
+
+            </div>
+          </div>
           
           {/* Decorative background elements */}
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -155,7 +380,7 @@ const Home = () => {
                 scale: [1, 1.1, 0.9, 1]
               }}
               transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-[10%] left-[10%] w-72 md:w-96 h-72 md:h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl"
+              className="absolute top-[5%] left-[5%] w-80 md:w-[450px] h-80 md:h-[450px] bg-primary/25 rounded-full filter blur-3xl"
             ></motion.div>
             <motion.div 
               animate={{ 
@@ -164,7 +389,7 @@ const Home = () => {
                 scale: [1, 0.9, 1.1, 1]
               }}
               transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute top-[10%] right-[10%] w-72 md:w-96 h-72 md:h-96 bg-secondary/20 rounded-full mix-blend-multiply filter blur-3xl"
+              className="absolute top-[5%] right-[5%] w-80 md:w-[450px] h-80 md:h-[450px] bg-[#3b82f6]/25 rounded-full filter blur-3xl"
             ></motion.div>
             <motion.div 
               animate={{ 
@@ -173,39 +398,39 @@ const Home = () => {
                 scale: [1, 1.05, 0.95, 1]
               }}
               transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", delay: 4 }}
-              className="absolute -bottom-8 left-[30%] w-72 md:w-96 h-72 md:h-96 bg-tertiary-container/30 rounded-full mix-blend-multiply filter blur-3xl"
+              className="absolute -bottom-16 left-[25%] w-80 md:w-[450px] h-80 md:h-[450px] bg-tertiary-fixed/20 rounded-full filter blur-3xl"
             ></motion.div>
             
             {/* Floating Icons */}
             <motion.div
               animate={{ y: [0, -20, 0], rotate: [0, 5, -5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-[20%] left-[5%] opacity-10"
+              className="absolute top-[20%] left-[5%] opacity-25"
             >
               <span className="material-symbols-outlined text-6xl text-primary">backpack</span>
             </motion.div>
             <motion.div
               animate={{ y: [0, -15, 0], rotate: [0, -5, 5, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute top-[60%] right-[8%] opacity-10"
+              className="absolute top-[60%] right-[8%] opacity-25"
             >
-              <span className="material-symbols-outlined text-5xl text-secondary">phone_android</span>
+              <span className="material-symbols-outlined text-5xl text-[#3b82f6]">phone_android</span>
             </motion.div>
             <motion.div
               animate={{ y: [0, -25, 0], rotate: [0, 10, -10, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute bottom-[15%] left-[15%] opacity-10"
+              className="absolute bottom-[15%] left-[15%] opacity-25"
             >
               <span className="material-symbols-outlined text-7xl text-tertiary">key</span>
             </motion.div>
             
             {/* Subtle Grid Pattern */}
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMjBWMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMCAwTDIwIDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik0wIDIwaDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-50"></div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMjBWMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMCAwTDIwIDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMScvPjxwYXRoIGQ9Ik0wIDIwaDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMScvPjwvc3ZnPg==')] opacity-50"></div>
           </div>
         </section>
 
-        {/* Quick Stats */}
-        <section className="py-12 bg-surface">
+        {/* Quick Stats Section */}
+        <section className="py-16 bg-surface relative z-10 border-t border-outline-variant/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <motion.div 
               initial="hidden"
@@ -215,143 +440,138 @@ const Home = () => {
                 visible: { transition: { staggerChildren: 0.1 } },
                 hidden: {}
               }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+              className="grid grid-cols-2 lg:grid-cols-4 gap-6"
             >
+              {/* Stat 1 */}
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container rounded-xl p-6 text-center border border-outline-variant shadow-sm cursor-pointer"
+                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <span className="material-symbols-outlined text-2xl">analytics</span>
+                </div>
                 <motion.div 
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ type: "spring", delay: 0.2 }}
-                  className="font-headline-lg text-headline-lg text-primary mb-2"
+                  className="font-headline-lg text-headline-lg text-primary font-bold group-hover:scale-105 transition-all"
                 >
                   {loading ? (
                     <span className="inline-block animate-pulse">...</span>
                   ) : (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {stats.total.toLocaleString('id-ID')}
-                    </motion.span>
+                    <span>{stats.total.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant">Total Laporan</div>
+                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Total Laporan</div>
               </motion.div>
+
+              {/* Stat 2 */}
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container rounded-xl p-6 text-center border border-outline-variant shadow-sm cursor-pointer"
+                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
+                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+                  <span className="material-symbols-outlined text-2xl">check_circle</span>
+                </div>
                 <motion.div 
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ type: "spring", delay: 0.3 }}
-                  className="font-headline-lg text-headline-lg text-secondary mb-2"
+                  className="font-headline-lg text-headline-lg text-secondary font-bold group-hover:scale-105 transition-all"
                 >
                   {loading ? (
                     <span className="inline-block animate-pulse">...</span>
                   ) : (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {stats.returned.toLocaleString('id-ID')}
-                    </motion.span>
+                    <span>{stats.returned.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant">Barang Kembali</div>
+                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Barang Kembali</div>
               </motion.div>
+
+              {/* Stat 3 */}
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container rounded-xl p-6 text-center border border-outline-variant shadow-sm cursor-pointer"
+                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                  <span className="material-symbols-outlined text-2xl">search</span>
+                </div>
                 <motion.div 
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ type: "spring", delay: 0.4 }}
-                  className="font-headline-lg text-headline-lg text-primary mb-2"
+                  className="font-headline-lg text-headline-lg text-primary font-bold group-hover:scale-105 transition-all"
                 >
                   {loading ? (
                     <span className="inline-block animate-pulse">...</span>
                   ) : (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {stats.lost.toLocaleString('id-ID')}
-                    </motion.span>
+                    <span>{stats.lost.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant">Sedang Dicari</div>
+                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Sedang Dicari</div>
               </motion.div>
+
+              {/* Stat 4 */}
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                whileHover={{ y: -8, scale: 1.02 }}
+                whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container rounded-xl p-6 text-center border border-outline-variant shadow-sm cursor-pointer"
+                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
+                <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
+                  <span className="material-symbols-outlined text-2xl">verified_user</span>
+                </div>
                 <motion.div 
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ type: "spring", delay: 0.5 }}
-                  className="font-headline-lg text-headline-lg text-secondary mb-2"
+                  className="font-headline-lg text-headline-lg text-secondary font-bold group-hover:scale-105 transition-all"
                 >
                   {loading ? (
                     <span className="inline-block animate-pulse">...</span>
                   ) : (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      {`${stats.successRate}%`}
-                    </motion.span>
+                    <span>{`${stats.successRate}%`}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant">Tingkat Sukses</div>
+                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Tingkat Sukses</div>
               </motion.div>
             </motion.div>
           </div>
         </section>
 
         {/* Search by Campus */}
-        <section className="py-16 bg-surface-container-low">
+        <section className="py-16 bg-surface-container-low border-t border-b border-outline-variant/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <div className="mb-12 text-center">
               <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Jelajahi Kampus</span>
-              <h2 className="font-headline-lg text-headline-lg text-on-surface">Cari Berdasarkan Kampus</h2>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">Cari Berdasarkan Kampus</h2>
               <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
               {campuses.map((campus) => (
                 <motion.div
                   key={campus.name}
                   whileHover={{ y: -8, scale: 1.03 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   onClick={() => navigate(`/lost-items?campus=${encodeURIComponent(campus.name)}`)}
-                  className="bg-surface rounded-2xl border border-outline-variant p-6 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl hover:border-primary/30 transition-all group"
+                  className="bg-surface rounded-2xl border border-outline-variant/60 p-6 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl hover:border-primary/30 transition-all group"
                 >
-                  <div className="w-24 h-24 flex items-center justify-center mb-4 p-2 rounded-xl bg-surface-container-high/50 group-hover:bg-primary/5 transition-colors">
+                  <div className="w-24 h-24 flex items-center justify-center mb-4 p-2 rounded-2xl bg-surface-container-high/50 group-hover:bg-primary/5 transition-all">
                     {campus.logo ? (
-                      <img src={campus.logo} alt={campus.name} className="max-w-full max-h-full object-contain" />
+                      <img src={campus.logo} alt={campus.name} className="max-w-full max-h-full object-contain filter drop-shadow-sm group-hover:scale-105 transition-all duration-300" />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all">
                         <span className="material-symbols-outlined text-4xl">school</span>
                       </div>
                     )}
@@ -368,14 +588,13 @@ const Home = () => {
         {/* How it Works */}
         <section className="py-20 bg-surface-container-lowest">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
-            {/* Header Section */}
-            <div className="mb-16 max-w-2xl mx-auto flex flex-col items-center text-center">
+            <div className="mb-16 max-w-[672px] mx-auto flex flex-col items-center text-center">
               <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Alur Sistem</span>
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="font-headline-lg text-headline-lg text-on-surface"
+                className="font-headline-lg text-headline-lg text-on-surface font-bold"
               >
                 Cara Kerja FindIt Campus
               </motion.h2>
@@ -449,15 +668,15 @@ const Home = () => {
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -10 }}
-                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-tertiary/30 hover:bg-tertiary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
-                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-tertiary group-hover:drop-shadow-[0_0_12px_rgba(97,30,0,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
+                <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,40,142,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   03
                 </div>
                 <motion.div 
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="w-14 h-14 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary mb-6 group-hover:bg-tertiary group-hover:text-on-tertiary transition-all duration-300 shadow-sm"
+                  className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-on-primary transition-all duration-300 shadow-sm"
                 >
                   <motion.span 
                     animate={{ y: [0, -3, 0] }}
@@ -467,7 +686,7 @@ const Home = () => {
                     handshake
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-tertiary transition-colors duration-300 font-semibold">Hubungi & Kembalikan</h3>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Hubungi & Kembalikan</h3>
                 <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
                   Komunikasi langsung secara aman dengan fitur chat realtime dan lakukan serah terima barang di area kampus.
                 </p>
@@ -477,196 +696,223 @@ const Home = () => {
         </section>
 
         {/* Recent Lost Items */}
-        <section className="py-16 bg-surface">
+        <section className="py-20 bg-surface">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h2 className="font-headline-md text-headline-md text-on-surface">Barang Hilang Terbaru</h2>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-2">Bantu teman menemukan barang mereka.</p>
+            <div className="bg-surface-container-low/60 border border-outline-variant/50 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
+              {/* Subtle background blob */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full filter blur-3xl pointer-events-none"></div>
+
+              <div className="flex justify-between items-end mb-10 relative z-10">
+                <div>
+                  <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-1 block">Mari Membantu</span>
+                  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Hilang Terbaru</h2>
+                  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Bantu teman menemukan barang mereka di lingkungan kampus.</p>
+                </div>
+                <Link className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/lost-items">
+                  Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
               </div>
-              <Link className="text-primary font-label-md text-label-md hover:underline flex items-center" to="/lost-items">
-                Lihat Semua <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
-              </Link>
-            </div>
-            
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            >
-              {loading ? (
-                <>
-                  <CardSkeleton />
-                  <CardSkeleton />
-                  <CardSkeleton />
-                </>
-              ) : lostItems.length === 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="col-span-full py-xl text-center text-on-surface-variant bg-surface-container rounded-xl border border-outline-variant"
-                >
-                  <motion.span 
-                    animate={{ rotate: [0, -10, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                    className="material-symbols-outlined text-3xl mb-2 opacity-50 inline-block"
-                  >
-                    search_off
-                  </motion.span>
-                  <p>Belum ada laporan barang hilang terbaru.</p>
-                </motion.div>
-              ) : (
-                lostItems.map((item) => (
+              
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10"
+              >
+                {loading ? (
+                  <>
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                  </>
+                ) : lostItems.length === 0 ? (
                   <motion.div 
-                    variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                    key={item.id}
-                    whileHover={{ y: -8 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="col-span-full py-16 text-center text-on-surface-variant bg-surface-container rounded-2xl border border-outline-variant/60 shadow-sm"
                   >
-                    <Link to={`/item-detail?id=${item.id}`} className="block bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
-                      <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
-                        {item.image_url ? (
-                          <motion.img 
-                            src={item.image_url} 
-                            alt={item.title} 
-                            className="w-full h-full object-cover"
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.4 }}
-                          />
-                        ) : (
-                          <motion.span 
-                            animate={{ rotate: [0, 5, -5, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                            className="material-symbols-outlined text-[64px] text-outline-variant opacity-50"
-                          >
-                            inventory_2
-                          </motion.span>
-                        )}
-                        <motion.div 
-                          initial={{ x: 20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                          className="absolute top-3 right-3 bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold z-10 shadow-sm"
-                        >
-                          Hilang
-                        </motion.div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-grow">
-                        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1 truncate group-hover:text-primary transition-colors">{item.title}</h3>
-                        <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center"><span className="material-symbols-outlined text-[16px] mr-1">location_on</span> {item.location || 'Tidak diketahui'}</p>
-                        <div className="flex justify-between items-center mt-auto pt-4 border-t border-outline-variant">
-                          <span className="font-label-sm text-label-sm text-outline">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
-                          <motion.span 
-                            whileHover={{ scale: 1.05 }}
-                            className="text-primary font-label-md text-label-md bg-primary/5 group-hover:bg-primary group-hover:text-on-primary px-4 py-1.5 rounded-full transition-all duration-300"
-                          >
-                            Detail
-                          </motion.span>
-                        </div>
-                      </div>
-                    </Link>
+                    <motion.span 
+                      animate={{ rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                      className="material-symbols-outlined text-4xl mb-3 opacity-50 inline-block text-primary"
+                    >
+                      search_off
+                    </motion.span>
+                    <p className="font-medium text-on-surface-variant">Belum ada laporan barang hilang terbaru.</p>
                   </motion.div>
-                ))
-              )}
-            </motion.div>
+                ) : (
+                  lostItems.map((item) => (
+                    <motion.div 
+                      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
+                      key={item.id}
+                      whileHover={{ y: -8 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full group">
+                        <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
+                          {item.image_url ? (
+                            <motion.img 
+                              src={item.image_url} 
+                              alt={item.title} 
+                              className="w-full h-full object-cover"
+                              whileHover={{ scale: 1.08 }}
+                              transition={{ duration: 0.4 }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center">
+                              <span className="material-symbols-outlined text-[64px] text-outline/30 select-none">
+                                inventory_2
+                              </span>
+                            </div>
+                          )}
+                          <div className="absolute top-3 left-3 bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
+                            Hilang
+                          </div>
+                          {item.campus && (
+                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
+                              {item.campus}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-5 flex flex-col flex-grow">
+                          <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 truncate group-hover:text-primary transition-colors font-semibold">{item.title}</h3>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-outline">location_on</span> 
+                            <span className="truncate">{item.location || 'Tidak diketahui'}</span>
+                          </p>
+                          <div className="flex justify-between items-center mt-auto pt-4 border-t border-outline-variant/50">
+                            <span className="font-label-sm text-label-sm text-outline">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
+                            <span className="text-primary font-label-md text-label-md bg-primary/5 group-hover:bg-primary group-hover:text-on-primary px-4 py-1.5 rounded-full transition-all duration-300 font-semibold">
+                              Detail
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            </div>
           </div>
         </section>
 
         {/* Recent Found Items */}
-        <section className="py-16 bg-surface-container-lowest">
+        <section className="py-20 bg-surface-container-lowest border-t border-outline-variant/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
-            <div className="flex justify-between items-end mb-8">
-              <div>
-                <h2 className="font-headline-md text-headline-md text-on-surface">Barang Temuan Terbaru</h2>
-                <p className="font-body-md text-body-md text-on-surface-variant mt-2">Cek jika barang Anda ada di sini.</p>
+            <div className="bg-surface-container-low/60 border border-outline-variant/50 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
+              {/* Subtle background blob */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full filter blur-3xl pointer-events-none"></div>
+
+              <div className="flex justify-between items-end mb-10 relative z-10">
+                <div>
+                  <span className="font-label-md text-label-md text-secondary tracking-widest uppercase mb-1 block">Barang Temuan</span>
+                  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Temuan Terbaru</h2>
+                  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Cek daftar berikut jika Anda merasa kehilangan barang berharga Anda.</p>
+                </div>
+                <Link className="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/found-items">
+                  Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </Link>
               </div>
-              <Link className="text-primary font-label-md text-label-md hover:underline flex items-center" to="/lost-items">
-                Lihat Semua <span className="material-symbols-outlined text-sm ml-1">arrow_forward</span>
+              
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
+                className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10"
+              >
+                {loading ? (
+                  <>
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                  </>
+                ) : foundItems.length === 0 ? (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="col-span-full py-16 text-center text-on-surface-variant bg-surface-container rounded-2xl border border-outline-variant/60 shadow-sm"
+                  >
+                    <motion.span 
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                      className="material-symbols-outlined text-4xl mb-3 opacity-50 inline-block text-secondary"
+                    >
+                      search_off
+                    </motion.span>
+                    <p className="font-medium text-on-surface-variant">Belum ada laporan barang temuan terbaru.</p>
+                  </motion.div>
+                ) : (
+                  foundItems.map((item) => (
+                    <motion.div 
+                      variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
+                      key={item.id}
+                      whileHover={{ y: -8 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-secondary/20 transition-all duration-300 flex flex-col h-full group">
+                        <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
+                          {item.image_url ? (
+                            <motion.img 
+                              src={item.image_url} 
+                              alt={item.title} 
+                              className="w-full h-full object-cover"
+                              whileHover={{ scale: 1.08 }}
+                              transition={{ duration: 0.4 }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center">
+                              <span className="material-symbols-outlined text-[64px] text-outline/30 select-none">
+                                inventory_2
+                              </span>
+                            </div>
+                          )}
+                          <div className="absolute top-3 left-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
+                            Ditemukan
+                          </div>
+                          {item.campus && (
+                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
+                              {item.campus}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-5 flex flex-col flex-grow">
+                          <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 truncate group-hover:text-secondary transition-colors font-semibold">{item.title}</h3>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[16px] text-outline">location_on</span> 
+                            <span className="truncate">{item.location || 'Tidak diketahui'}</span>
+                          </p>
+                          <div className="flex justify-between items-center mt-auto pt-4 border-t border-outline-variant/50">
+                            <span className="font-label-sm text-label-sm text-outline">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
+                            <span className="text-secondary font-label-md text-label-md bg-secondary/5 group-hover:bg-secondary group-hover:text-on-secondary px-4 py-1.5 rounded-full transition-all duration-300 font-semibold">
+                              Detail
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))
+                )}
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Call To Action (CTA) Section */}
+        <section className="py-20 bg-gradient-to-r from-primary to-[#1e40af] text-on-primary relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:24px_24px] opacity-20 z-0"></div>
+          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto text-center relative z-10">
+            <h2 className="font-headline-lg text-headline-lg font-bold mb-4">Mulai Membantu Sesama Mahasiswa</h2>
+            <p className="font-body-lg text-body-lg text-primary-fixed mb-8 max-w-[672px] mx-auto opacity-90">
+              Apakah Anda kehilangan barang berharga? Atau menemukan barang milik mahasiswa lain? Laporkan sekarang untuk mengembalikannya ke pemilik sah.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link to="/create-report?type=lost" className="px-8 py-3.5 bg-surface text-primary font-label-md text-label-md rounded-full hover:bg-surface-container-high transition-all shadow-md font-semibold text-center">
+                Laporkan Kehilangan
+              </Link>
+              <Link to="/create-report?type=found" className="px-8 py-3.5 bg-transparent border-2 border-surface text-on-primary font-label-md text-label-md rounded-full hover:bg-surface/10 transition-all font-semibold text-center">
+                Laporkan Temuan
               </Link>
             </div>
-            
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.15 } }, hidden: {} }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            >
-              {loading ? (
-                <>
-                  <CardSkeleton />
-                  <CardSkeleton />
-                  <CardSkeleton />
-                </>
-              ) : foundItems.length === 0 ? (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="col-span-full py-xl text-center text-on-surface-variant bg-surface-container rounded-xl border border-outline-variant"
-                >
-                  <motion.span 
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                    className="material-symbols-outlined text-3xl mb-2 opacity-50 inline-block"
-                  >
-                    search_off
-                  </motion.span>
-                  <p>Belum ada laporan barang temuan terbaru.</p>
-                </motion.div>
-              ) : (
-                foundItems.map((item) => (
-                  <motion.div 
-                    variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
-                    key={item.id}
-                    whileHover={{ y: -8 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <Link to={`/item-detail?id=${item.id}`} className="block bg-surface rounded-xl border border-outline-variant overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
-                      <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
-                        {item.image_url ? (
-                          <motion.img 
-                            src={item.image_url} 
-                            alt={item.title} 
-                            className="w-full h-full object-cover"
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.4 }}
-                          />
-                        ) : (
-                          <motion.span 
-                            animate={{ rotate: [0, -5, 5, 0] }}
-                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                            className="material-symbols-outlined text-[64px] text-outline-variant opacity-50"
-                          >
-                            inventory_2
-                          </motion.span>
-                        )}
-                        <motion.div 
-                          initial={{ x: 20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.2 }}
-                          className="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold z-10 shadow-sm"
-                        >
-                          Ditemukan
-                        </motion.div>
-                      </div>
-                      <div className="p-4 flex flex-col flex-grow">
-                        <h3 className="font-headline-sm text-headline-sm text-on-surface mb-1 truncate group-hover:text-secondary transition-colors">{item.title}</h3>
-                        <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center"><span className="material-symbols-outlined text-[16px] mr-1">location_on</span> {item.location || 'Tidak diketahui'}</p>
-                        <div className="flex justify-between items-center mt-auto pt-4 border-t border-outline-variant">
-                          <span className="font-label-sm text-label-sm text-outline">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
-                          <motion.span 
-                            whileHover={{ scale: 1.05 }}
-                            className="text-secondary font-label-md text-label-md bg-secondary/5 group-hover:bg-secondary group-hover:text-on-secondary px-4 py-1.5 rounded-full transition-all duration-300"
-                          >
-                            Detail
-                          </motion.span>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))
-              )}
-            </motion.div>
           </div>
         </section>
       </main>

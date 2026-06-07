@@ -49,15 +49,6 @@ const Footer = () => {
       label: 'Share', 
       onClick: handleShare,
       hoverClass: 'hover:text-primary hover:border-primary hover:bg-primary/5 dark:hover:bg-primary-fixed-dim/10'
-    },
-    { 
-      icon: whatsappIcon, 
-      label: 'WhatsApp Admin', 
-      href: 'https://wa.me/6287866272028?text=Halo%20Admin%20FindIt%20Campus%2C%20saya%20ingin%20melaporkan%20kendala%20sistem.',
-      target: '_blank', 
-      rel: 'noopener noreferrer',
-      isSvg: true,
-      hoverClass: 'hover:text-[#25D366] hover:border-[#25D366] hover:bg-[#25D366]/5 dark:hover:bg-[#25D366]/10'
     }
   ];
 

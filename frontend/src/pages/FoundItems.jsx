@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
+import { motion } from 'framer-motion';
 import uinLogo from '../assets/uin.png';
 import unriLogo from '../assets/unri.png';
 import uirLogo from '../assets/uir.png';
@@ -85,31 +86,47 @@ const FoundItems = () => {
 
       <main className="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-xl">
         {/* Page Header */}
-        <div className="mb-lg relative rounded-3xl overflow-hidden bg-secondary-fixed-dim/20 border border-secondary/10 p-8 md:p-12 shadow-sm">
+        <div className="mb-lg relative rounded-3xl overflow-hidden bg-gradient-to-b from-surface-container-low via-surface-container-low to-surface border border-outline-variant/60 p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
           <div className="relative z-10">
-            <h1 className="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Daftar Barang Ditemukan</h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Telusuri daftar barang-barang yang telah ditemukan di area kampus. Gunakan fitur pencarian dan filter untuk mempermudah pencarian barang Anda.</p>
+            <span className="font-label-md text-label-md text-secondary tracking-widest uppercase mb-2 block font-semibold">Cari & Temukan</span>
+            <h1 className="font-headline-xl text-headline-xl text-on-surface mb-4 font-bold leading-tight">
+              Daftar <span className="text-transparent bg-clip-text bg-gradient-to-r from-secondary via-[#008f5d] to-[#16a34a]">Barang Temuan</span>
+            </h1>
+            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed">
+              Telusuri daftar barang-barang yang telah ditemukan di area kampus. Silakan cek detail laporan untuk mencocokkan dengan barang Anda yang hilang.
+            </p>
           </div>
           
           {/* Animated Background */}
           <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-[-50%] right-[-10%] w-64 md:w-96 h-64 md:h-96 bg-secondary/20 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
-            <div className="absolute bottom-[-50%] right-[10%] w-64 md:w-96 h-64 md:h-96 bg-primary-container/40 rounded-full mix-blend-multiply filter blur-3xl animate-blob" style={{ animationDelay: '2s' }}></div>
-            
-            {/* Subtle Grid Pattern */}
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMjBWMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMCAwTDIwIDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjxwYXRoIGQ9Ik0wIDIwaDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')] opacity-40"></div>
+            <motion.div 
+              animate={{ 
+                x: [0, 30, -30, 0],
+                y: [0, -30, 30, 0],
+                scale: [1, 1.1, 0.9, 1]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-10 -left-10 w-72 h-72 bg-secondary/15 rounded-full filter blur-3xl"
+            ></motion.div>
+            <motion.div 
+              animate={{ 
+                x: [0, -20, 20, 0],
+                y: [0, 20, -20, 0],
+                scale: [1, 0.95, 1.05, 1]
+              }}
+              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute -bottom-10 right-10 w-72 h-72 bg-secondary-fixed-dim/20 rounded-full filter blur-3xl"
+            ></motion.div>
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTAgMjBWMGgyMHYyMEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0yMCAwTDIwIDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMScvPjxwYXRoIGQ9Ik0wIDIwaDIwIiBzdHJva2U9InJnYmEoMCwwLDAsMC4wNSkiIHN0cm9rZS13aWR0aD0iMScvPjwvc3ZnPg==')] opacity-45"></div>
           </div>
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm mb-xl flex flex-col md:flex-row gap-md items-end md:items-center">
-          <div className="w-full md:flex-1 relative">
-            <label className="sr-only" htmlFor="search">Cari barang...</label>
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="material-symbols-outlined text-outline">search</span>
-            </div>
+        <div className="bg-surface/90 backdrop-blur-md border border-outline-variant/60 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-lg flex flex-col md:flex-row gap-4 items-center">
+          <div className="w-full md:flex-1 relative flex items-center bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant/40 focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary-fixed transition-all">
+            <span className="material-symbols-outlined text-secondary mr-2 select-none">search</span>
             <input 
-              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary bg-surface transition-all duration-200 text-body-sm font-body-sm" 
+              className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none" 
               id="search" 
               placeholder="Cari nama barang, lokasi, atau kategori..." 
               type="text"
@@ -117,10 +134,11 @@ const FoundItems = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-md">
-            <div className="relative w-full sm:w-auto">
+          
+          <div className="flex w-full md:w-auto gap-3 items-center">
+            <div className="relative w-full md:w-56 bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant/40 focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary-fixed transition-all flex items-center">
               <select 
-                className="w-full appearance-none bg-surface border border-outline-variant rounded-lg pl-3 pr-10 py-2 text-body-sm font-body-sm text-on-surface focus:ring-2 focus:ring-secondary focus:border-secondary transition-all duration-200" 
+                className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md text-on-surface appearance-none focus:outline-none cursor-pointer pr-6" 
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -131,13 +149,10 @@ const FoundItems = () => {
                 <option value="Kunci">Kunci</option>
                 <option value="Lainnya">Lainnya</option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-outline">
-                <span className="material-symbols-outlined">expand_more</span>
+              <div className="pointer-events-none absolute right-4 flex items-center px-1 text-outline">
+                <span className="material-symbols-outlined text-lg">expand_more</span>
               </div>
             </div>
-            <button className="w-full sm:w-auto bg-surface-container-high text-on-surface px-4 py-2 rounded-lg font-label-md text-label-md font-medium hover:bg-surface-variant transition-colors duration-200 flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-sm">tune</span> Filter
-            </button>
           </div>
         </div>
 
@@ -149,7 +164,7 @@ const FoundItems = () => {
               <button
                 key={campus.name}
                 onClick={() => setCampusFilter(campus.name)}
-                className={`flex items-center gap-xs px-md py-sm rounded-full border text-body-sm font-label-md transition-all whitespace-nowrap shrink-0 ${
+                className={`flex items-center gap-xs px-md py-sm rounded-full border text-body-sm font-label-md transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
                     ? 'bg-secondary text-on-secondary border-secondary shadow-sm font-semibold'
                     : 'bg-surface text-on-surface-variant border-outline-variant hover:bg-surface-container-high'
@@ -170,7 +185,7 @@ const FoundItems = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter mb-xl">
           {loading ? (
             <div className="col-span-full py-xl text-center text-on-surface-variant flex flex-col items-center justify-center">
-              <span className="material-symbols-outlined animate-spin text-4xl mb-4">progress_activity</span>
+              <span className="material-symbols-outlined animate-spin text-4xl mb-4 text-secondary">progress_activity</span>
               <p>Memuat data...</p>
             </div>
           ) : filteredItems.length === 0 ? (
@@ -180,35 +195,43 @@ const FoundItems = () => {
             </div>
           ) : (
             paginatedItems.map((item) => (
-              <Link key={item.id} to={`/item-detail?id=${item.id}`} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col group">
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-variant flex items-center justify-center">
+              <Link key={item.id} to={`/item-detail?id=${item.id}`} className="bg-surface rounded-2xl border border-outline-variant/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-secondary/20 transition-all duration-300 flex flex-col h-full group">
+                <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
                   {item.image_url ? (
-                    <img src={item.image_url} alt={item.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <motion.img 
+                      src={item.image_url} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover"
+                      whileHover={{ scale: 1.08 }}
+                      transition={{ duration: 0.4 }}
+                    />
                   ) : (
-                    <span className="material-symbols-outlined text-[64px] text-outline-variant opacity-50">inventory_2</span>
+                    <div className="w-full h-full bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[64px] text-outline/30 select-none">
+                        inventory_2
+                      </span>
+                    </div>
                   )}
-                  <div className="absolute top-2 left-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-medium bg-secondary-container text-on-secondary-container border border-secondary/20">
-                      Ditemukan
-                    </span>
+                  <div className="absolute top-3 left-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm border border-secondary/10">
+                    Ditemukan
                   </div>
+                  {item.campus && (
+                    <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
+                      {item.campus}
+                    </div>
+                  )}
                 </div>
-                <div className="p-md flex-grow flex flex-col">
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface mb-xs line-clamp-1 group-hover:text-secondary transition-colors">{item.title}</h3>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant mb-md line-clamp-2">{item.description || 'Tidak ada deskripsi'}</p>
-                  <div className="mt-auto space-y-2">
-                    <div className="flex items-center text-on-surface-variant font-body-sm text-body-sm">
-                      <span className="material-symbols-outlined text-[18px] mr-2 text-secondary">school</span>
-                      <span className="truncate">{item.campus || 'UIN Suska Riau'}</span>
-                    </div>
-                    <div className="flex items-center text-on-surface-variant font-body-sm text-body-sm">
-                      <span className="material-symbols-outlined text-[18px] mr-2">location_on</span>
-                      <span className="truncate">{item.location || 'Lokasi tidak diketahui'}</span>
-                    </div>
-                    <div className="flex items-center text-on-surface-variant font-body-sm text-body-sm">
-                      <span className="material-symbols-outlined text-[18px] mr-2">calendar_today</span>
-                      <span>{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
-                    </div>
+                <div className="p-5 flex flex-col flex-grow">
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 truncate group-hover:text-secondary transition-colors font-semibold">{item.title}</h3>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-outline">location_on</span> 
+                    <span className="truncate">{item.location || 'Tidak diketahui'}</span>
+                  </p>
+                  <div className="flex justify-between items-center mt-auto pt-4 border-t border-outline-variant/50">
+                    <span className="font-label-sm text-label-sm text-outline">{item.date_lost ? new Date(item.date_lost).toLocaleDateString('id-ID') : '-'}</span>
+                    <span className="text-secondary font-label-md text-label-md bg-secondary/5 group-hover:bg-secondary group-hover:text-on-secondary px-4 py-1.5 rounded-full transition-all duration-300 font-semibold">
+                      Detail
+                    </span>
                   </div>
                 </div>
               </Link>
