@@ -310,23 +310,23 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
         {/* Search and Category Filter Container */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-3xl bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md">
           {/* Search Input */}
-          <div className="relative w-full md:w-[360px] shrink-0">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+          <div className="relative w-full md:flex-1 md:max-w-[500px]">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari laporan kehilangan..."
               disabled={isScanning}
-              className="w-full pl-10 pr-9 py-2.5 rounded-2xl border border-outline-variant/50 bg-surface text-on-surface text-body-medium focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition-all duration-200"
+              className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-outline-variant/50 bg-surface text-on-surface text-body-large focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200 shadow-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 disabled={isScanning}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             )}
           </div>
@@ -398,7 +398,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             )}
           </div>
 
-          <div ref={scrollRef} className="relative min-h-[160px] overflow-x-auto scrollbar-none snap-x snap-mandatory pb-1">
+          <div ref={scrollRef} className="relative min-h-[210px] overflow-x-auto scrollbar-none snap-x snap-mandatory">
             <AnimatePresence mode="wait" custom={slideDirection}>
               <motion.div
                 key={currentPage + '_' + selectedCategory + '_' + searchQuery}
@@ -411,7 +411,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                   x: { type: "spring", stiffness: 300, damping: 30 },
                   opacity: { duration: 0.15 }
                 }}
-                className="flex gap-3 pt-3 pb-4 pr-4 scrollbar-none px-1 -mt-3"
+                className="flex gap-4 pt-5 pb-8 pr-4 px-3 scrollbar-none min-h-[180px]"
               >
                 {paginatedLost.length > 0 ? (
                   paginatedLost.map((item) => {
