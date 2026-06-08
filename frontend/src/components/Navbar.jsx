@@ -12,6 +12,17 @@ const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const prevUnreadRef = useRef(0);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
 
   const handleLogout = async () => {
     try {
@@ -178,6 +189,19 @@ const Navbar = () => {
         </nav>
         {/* Actions */}
         <div className="flex items-center space-x-4">
+          {/* Dark Mode Toggle Button */}
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: theme === 'dark' ? 15 : -15 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant dark:text-outline-variant hover:bg-surface-variant/40 dark:hover:bg-outline-variant/15 transition-all cursor-pointer"
+            title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
+          >
+            <span className="material-symbols-outlined text-[24px]">
+              {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+            </span>
+          </motion.button>
+
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link to="/create-report" className="hidden md:inline-flex bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary-container hover:text-on-primary-container transition-colors">
               Buat Laporan
