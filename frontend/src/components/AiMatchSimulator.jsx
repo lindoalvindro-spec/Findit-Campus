@@ -265,32 +265,61 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
           <AnimatePresence>
             {isScanning && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="w-full max-w-md"
+                initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.97 }}
+                className="w-full max-w-2xl mx-auto"
               >
-                <div className="bg-surface border border-outline-variant/40 rounded-2xl p-6 shadow-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
-                      <span className="text-xs font-bold text-primary uppercase tracking-wider">Memproses...</span>
+                <div className="bg-surface border border-primary/20 rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,40,142,0.08)] relative overflow-hidden">
+                  {/* Animated scan line */}
+                  <motion.div
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
+                  />
+
+                  {/* Header row */}
+                  <div className="flex items-center justify-between mb-5 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <div className="w-5 h-5 rounded-full border-[2.5px] border-primary/25 border-t-primary animate-spin" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-on-surface">Memproses Pencocokan AI</p>
+                        <p className="text-xs text-on-surface-variant mt-0.5">{scanStepText}</p>
+                      </div>
                     </div>
-                    <span className="text-sm font-black text-primary tabular-nums">{scanProgress}%</span>
+                    <div className="flex items-center gap-1.5 bg-primary/8 px-3.5 py-1.5 rounded-xl">
+                      <span className="text-xl font-black text-primary tabular-nums leading-none">{scanProgress}</span>
+                      <span className="text-xs font-bold text-primary/70">%</span>
+                    </div>
                   </div>
 
                   {/* Progress Bar */}
-                  <div className="w-full h-2.5 bg-outline-variant/20 rounded-full overflow-hidden mb-3">
+                  <div className="w-full h-3 bg-outline-variant/15 rounded-full overflow-hidden relative z-10">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${scanProgress}%` }}
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
-                      className="h-full bg-gradient-to-r from-primary to-[#3b82f6] rounded-full relative"
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-primary via-[#3b82f6] to-primary rounded-full relative"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-pulse rounded-full" />
                     </motion.div>
                   </div>
-                  <p className="text-xs text-on-surface-variant font-medium text-center">{scanStepText}</p>
+
+                  {/* Progress Steps Dots */}
+                  <div className="flex justify-between mt-3 px-1 relative z-10">
+                    {['Kategori', 'Lokasi', 'Deskripsi', 'Skor', 'Selesai'].map((label, i) => {
+                      const stepThreshold = [0, 20, 45, 70, 100];
+                      const isReached = scanProgress >= stepThreshold[i];
+                      return (
+                        <div key={label} className="flex flex-col items-center gap-1">
+                          <div className={`w-2 h-2 rounded-full transition-all duration-300 ${isReached ? 'bg-primary scale-125' : 'bg-outline-variant/40'}`} />
+                          <span className={`text-[9px] font-semibold transition-colors ${isReached ? 'text-primary' : 'text-outline-variant/60'}`}>{label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </motion.div>
             )}
