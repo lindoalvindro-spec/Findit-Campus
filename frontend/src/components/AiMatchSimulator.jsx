@@ -303,7 +303,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
         {/* Search and Category Filter Container */}
         <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-3xl bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md">
           {/* Search Input */}
-          <div className="relative flex-1 max-w-md">
+          <div className="relative w-full md:w-auto flex-1 max-w-md">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
             <input
               type="text"
@@ -325,7 +325,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
           </div>
 
           {/* Category Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none snap-x snap-mandatory">
+          <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none snap-x snap-mandatory w-full md:w-auto">
             {['Semua', 'Dokumen & Kartu', 'Elektronik & Gadget', 'Kunci', 'Aksesoris & Perhiasan', 'Lainnya'].map((cat) => {
               const isCatActive = selectedCategory === cat;
               return (
