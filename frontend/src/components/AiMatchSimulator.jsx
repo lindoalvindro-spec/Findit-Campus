@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const slideVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 80 : -80,
+    opacity: 0
+  }),
+  center: {
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction) => ({
+    x: direction < 0 ? 80 : -80,
+    opacity: 0
+  })
+};
+
 // Fallback mockup data in case database is empty
 const fallbackLostItems = [
   { id: 'mock-lost-1', title: 'KTM UIN Suska Riau', users: { full_name: 'Reza Amanda' }, location: 'Perpustakaan Lt. 2', category: 'Kartu/Dokumen', description: 'KTM atas nama Reza Amanda, NIM 12250111xxx, Fakultas Tarbiyah.', status: 'lost' },
@@ -26,6 +41,17 @@ const getIcon = (item) => {
   if (t.includes('charger') || t.includes('laptop') || t.includes('macbook')) return 'laptop_mac';
   if (t.includes('almamater') || t.includes('jas') || t.includes('jaket')) return 'checkroom';
   return 'inventory_2';
+};
+
+const getCategoryIcon = (cat) => {
+  switch (cat) {
+    case 'Semua': return 'grid_view';
+    case 'Dokumen & Kartu': return 'badge';
+    case 'Elektronik & Gadget': return 'phone_android';
+    case 'Kunci': return 'key';
+    case 'Aksesoris & Perhiasan': return 'stars';
+    default: return 'more_horiz';
+  }
 };
 
 const getKeywords = (text = '') => {
@@ -86,24 +112,114 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
   const scrollRef = useRef(null);
   const initializedRef = useRef(false);
 
+  // New States for Search, Filter & Carousel Pagination
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [currentPage, setCurrentPage] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0);
+
   const isReal = lostItems.length > 0;
   const activeLost = isReal ? lostItems : fallbackLostItems;
   const activeFound = isReal ? foundItems : fallbackFoundItems;
 
+  // Filter lost items dynamically based on search query and category
+  const filteredLost = React.useMemo(() => {
+    return activeLost.filter(item => {
+      // 1. Category Filter with fuzzy matching for resilience
+      if (selectedCategory !== 'Semua') {
+        const itemCat = (item.category || '').toLowerCase();
+        const targetCat = selectedCategory.toLowerCase();
+        
+        const isDocMatch = (targetCat.includes('dokumen') || targetCat.includes('kartu')) && 
+          (itemCat.includes('dokumen') || itemCat.includes('kartu') || itemCat.includes('ktm') || itemCat.includes('ktp'));
+        const isElecMatch = (targetCat.includes('elektronik') || targetCat.includes('gadget')) && 
+          (itemCat.includes('elektronik') || itemCat.includes('gadget') || itemCat.includes('hp') || itemCat.includes('laptop') || itemCat.includes('charger'));
+        const isAccMatch = (targetCat.includes('aksesoris') || targetCat.includes('perhiasan')) && 
+          (itemCat.includes('aksesoris') || itemCat.includes('perhiasan'));
+        const isKeyMatch = targetCat.includes('kunci') && (itemCat.includes('kunci') || itemCat.includes('key'));
+        const isOtherMatch = targetCat === 'lainnya' && 
+          !itemCat.includes('dokumen') && !itemCat.includes('kartu') && !itemCat.includes('ktm') && !itemCat.includes('ktp') &&
+          !itemCat.includes('elektronik') && !itemCat.includes('gadget') && !itemCat.includes('hp') && !itemCat.includes('laptop') && !itemCat.includes('charger') &&
+          !itemCat.includes('aksesoris') && !itemCat.includes('perhiasan') && !itemCat.includes('kunci') && !itemCat.includes('key');
+          
+        if (!isDocMatch && !isElecMatch && !isAccMatch && !isKeyMatch && !isOtherMatch) {
+          if (itemCat !== targetCat) return false;
+        }
+      }
+
+      // 2. Search Query Filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const title = (item.title || '').toLowerCase();
+        const desc = (item.description || '').toLowerCase();
+        const loc = (item.location || '').toLowerCase();
+        const name = (item.users?.full_name || '').toLowerCase();
+        const cat = (item.category || '').toLowerCase();
+        return title.includes(q) || desc.includes(q) || loc.includes(q) || name.includes(q) || cat.includes(q);
+      }
+
+      return true;
+    });
+  }, [activeLost, searchQuery, selectedCategory]);
+
+  // Carousel Pagination Constants & Memos
+  const ITEMS_PER_PAGE = 4;
+  const totalPages = Math.ceil(filteredLost.length / ITEMS_PER_PAGE);
+  const paginatedLost = React.useMemo(() => {
+    const start = currentPage * ITEMS_PER_PAGE;
+    return filteredLost.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredLost, currentPage]);
+
+  // Reset page and handle selection when search or category filter changes
   useEffect(() => {
-    if (!initializedRef.current && activeLost.length > 0) {
+    setCurrentPage(0);
+    if (filteredLost.length > 0) {
+      const stillExists = filteredLost.some(i => i.id === selectedLostId);
+      if (!stillExists) {
+        setSelectedLostId(filteredLost[0].id);
+      }
+    } else {
+      setSelectedLostId('');
+    }
+  }, [searchQuery, selectedCategory]);
+
+  // Initial load selection
+  useEffect(() => {
+    if (activeLost.length > 0 && !selectedLostId && !initializedRef.current) {
       setSelectedLostId(activeLost[0].id);
       setActiveLostItem(activeLost[0]);
       initializedRef.current = true;
     }
-  }, [activeLost.length]);
+  }, [activeLost, selectedLostId]);
 
   useEffect(() => {
     if (selectedLostId) {
       const s = activeLost.find(i => i.id === selectedLostId);
-      if (s) { setActiveLostItem(s); setIsMatched(false); setNoMatch(false); setBestFoundItem(null); setReasons([]); }
+      if (s) { 
+        setActiveLostItem(s); 
+        setIsMatched(false); 
+        setNoMatch(false); 
+        setBestFoundItem(null); 
+        setReasons([]); 
+      }
+    } else {
+      setActiveLostItem(null);
     }
-  }, [selectedLostId]);
+  }, [selectedLostId, activeLost]);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setSlideDirection(1);
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setSlideDirection(-1);
+      setCurrentPage(prev => prev - 1);
+    }
+  };
 
   const startScan = () => {
     if (!activeLostItem || isScanning) return;
@@ -184,65 +300,192 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
           </motion.p>
         </div>
 
-        {/* Step 1: Horizontal Scrollable Item Picker */}
-        <div className="mb-10">
-          <div className="flex items-center gap-2 mb-4 px-1">
-            <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">touch_app</span>
-            </span>
-            <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 1:</span>
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Pilih laporan kehilangan</span>
+        {/* Search and Category Filter Container */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-3xl bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md">
+          {/* Search Input */}
+          <div className="relative flex-1 max-w-md">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari laporan kehilangan..."
+              disabled={isScanning}
+              className="w-full pl-10 pr-9 py-2.5 rounded-2xl border border-outline-variant/50 bg-surface text-on-surface text-body-medium focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition-all duration-200"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                disabled={isScanning}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">close</span>
+              </button>
+            )}
           </div>
 
-          <div className="relative">
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pt-3 pb-4 pr-4 scroll-smooth snap-x snap-mandatory scrollbar-none px-1 -mt-3">
-              {activeLost.map((item) => {
-                const isActive = selectedLostId === item.id;
-                return (
-                  <motion.button
-                    key={item.id}
-                    whileHover={{ y: -3 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelectedLostId(item.id)}
-                    disabled={isScanning}
-                    className={`snap-start shrink-0 w-[200px] p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer group relative overflow-hidden disabled:opacity-60 ${
-                      isActive
-                        ? 'border-primary bg-primary/5 shadow-[0_4px_20px_rgba(0,40,142,0.12)]'
-                        : 'border-outline-variant/40 bg-surface hover:border-primary/40 hover:shadow-md'
-                    }`}
-                  >
-                    {/* Active check indicator */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="activePicker"
-                        className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
-                      >
-                        <span className="material-symbols-outlined text-on-primary text-[14px]">check</span>
-                      </motion.div>
-                    )}
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
-                      isActive ? 'bg-primary/15 text-primary' : 'bg-surface-container-high/60 text-outline group-hover:text-primary group-hover:bg-primary/10'
-                    }`}>
-                      <span className="material-symbols-outlined text-xl">{getIcon(item)}</span>
-                    </div>
-                    <h4 className={`text-sm font-bold mb-1 truncate transition-colors ${
-                      isActive ? 'text-primary' : 'text-on-surface group-hover:text-primary'
-                    }`}>
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-on-surface-variant truncate flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">person</span>
-                      {item.users?.full_name || 'Anonim'}
-                    </p>
-                    <p className="text-[11px] text-outline truncate flex items-center gap-1 mt-0.5">
-                      <span className="material-symbols-outlined text-[12px]">location_on</span>
-                      {item.location || '-'}
-                    </p>
-                  </motion.button>
-                );
-              })}
-            </div>
+          {/* Category Filter Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none snap-x snap-mandatory">
+            {['Semua', 'Dokumen & Kartu', 'Elektronik & Gadget', 'Kunci', 'Aksesoris & Perhiasan', 'Lainnya'].map((cat) => {
+              const isCatActive = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => !isScanning && setSelectedCategory(cat)}
+                  disabled={isScanning}
+                  className={`snap-start shrink-0 px-4 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 disabled:opacity-60 relative overflow-hidden ${
+                    isCatActive
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-outline-variant/30 bg-surface/50 text-on-surface-variant hover:border-outline-variant hover:text-on-surface'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[16px]">{getCategoryIcon(cat)}</span>
+                  {cat === 'Elektronik & Gadget' ? 'Elektronik' : cat === 'Aksesoris & Perhiasan' ? 'Aksesoris' : cat}
+                  {isCatActive && (
+                    <motion.div
+                      layoutId="activeCategoryTab"
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
+        </div>
+
+        {/* Step 1: Carousel Item Picker */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined text-[18px]">touch_app</span>
+              </span>
+              <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 1:</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">Pilih laporan kehilangan</span>
+            </div>
+
+            {/* Carousel Navigation Arrows */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-outline mr-1.5">
+                  Halaman {currentPage + 1} dari {totalPages}
+                </span>
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0 || isScanning}
+                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface flex items-center justify-center text-outline hover:text-on-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
+                  title="Halaman Sebelumnya"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages - 1 || isScanning}
+                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface flex items-center justify-center text-outline hover:text-on-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
+                  title="Halaman Berikutnya"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="relative min-h-[148px] overflow-hidden">
+            <AnimatePresence mode="wait" custom={slideDirection}>
+              <motion.div
+                key={currentPage + '_' + selectedCategory + '_' + searchQuery}
+                custom={slideDirection}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 300, damping: 30 },
+                  opacity: { duration: 0.15 }
+                }}
+                className="flex gap-3 pt-3 pb-4 pr-4 scrollbar-none px-1 -mt-3"
+              >
+                {paginatedLost.length > 0 ? (
+                  paginatedLost.map((item) => {
+                    const isActive = selectedLostId === item.id;
+                    return (
+                      <motion.button
+                        key={item.id}
+                        whileHover={{ y: -3 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setSelectedLostId(item.id)}
+                        disabled={isScanning}
+                        className={`snap-start shrink-0 w-[200px] p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer group relative overflow-hidden disabled:opacity-60 ${
+                          isActive
+                            ? 'border-primary bg-primary/5 shadow-[0_4px_20px_rgba(0,40,142,0.12)]'
+                            : 'border-outline-variant/40 bg-surface hover:border-primary/40 hover:shadow-md'
+                        }`}
+                      >
+                        {/* Active check indicator */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activePicker"
+                            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
+                          >
+                            <span className="material-symbols-outlined text-on-primary text-[14px]">check</span>
+                          </motion.div>
+                        )}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                          isActive ? 'bg-primary/15 text-primary' : 'bg-surface-container-high/60 text-outline group-hover:text-primary group-hover:bg-primary/10'
+                        }`}>
+                          <span className="material-symbols-outlined text-xl">{getIcon(item)}</span>
+                        </div>
+                        <h4 className={`text-sm font-bold mb-1 truncate transition-colors ${
+                          isActive ? 'text-primary' : 'text-on-surface group-hover:text-primary'
+                        }`}>
+                          {item.title}
+                        </h4>
+                        <p className="text-[11px] text-on-surface-variant truncate flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">person</span>
+                          {item.users?.full_name || 'Anonim'}
+                        </p>
+                        <p className="text-[11px] text-outline truncate flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-[12px]">location_on</span>
+                          {item.location || '-'}
+                        </p>
+                      </motion.button>
+                    );
+                  })
+                ) : (
+                  <div className="flex-1 py-8 flex flex-col items-center justify-center text-center">
+                    <span className="material-symbols-outlined text-outline text-3xl mb-2">find_in_page</span>
+                    <p className="text-on-surface-variant text-sm font-bold">Tidak ada laporan ditemukan</p>
+                    <p className="text-outline text-xs mt-1">Coba sesuaikan kata kunci atau kategori pencarian Anda.</p>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Page Indicators (Dots) */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-1.5 mt-2">
+              {Array.from({ length: totalPages }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (!isScanning) {
+                      setSlideDirection(idx > currentPage ? 1 : -1);
+                      setCurrentPage(idx);
+                    }
+                  }}
+                  disabled={isScanning}
+                  className={`w-2 h-2 rounded-full transition-all duration-200 cursor-pointer ${
+                    currentPage === idx
+                      ? 'bg-primary w-5'
+                      : 'bg-outline-variant/60 hover:bg-outline'
+                  }`}
+                  title={`Ke Halaman ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Step 2: Action Button */}
@@ -257,10 +500,11 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
 
           {!isScanning && !isMatched && (
             <motion.button
-              whileHover={{ scale: 1.04, boxShadow: '0 8px 30px rgba(0,40,142,0.2)' }}
-              whileTap={{ scale: 0.96 }}
+              whileHover={selectedLostId ? { scale: 1.04, boxShadow: '0 8px 30px rgba(0,40,142,0.2)' } : {}}
+              whileTap={selectedLostId ? { scale: 0.96 } : {}}
               onClick={startScan}
-              className="bg-gradient-to-r from-primary to-[#1e40af] text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-2xl cursor-pointer shadow-lg flex items-center gap-2.5 transition-all"
+              disabled={!selectedLostId}
+              className={`bg-gradient-to-r from-primary to-[#1e40af] text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-2xl shadow-lg flex items-center gap-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
               Jalankan AI Matchmaker
