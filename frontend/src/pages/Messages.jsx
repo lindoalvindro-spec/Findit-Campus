@@ -581,8 +581,8 @@ const Messages = () => {
  </motion.button>
  </motion.div>
 
- {/* Context Item Sticky Header */}
- {contextItem && (
+  {/* Context Item Sticky Header */}
+  {contextItem && activeChat?.id === targetUserId && (
  <motion.div 
  initial={{ opacity: 0, y: -10 }}
  animate={{ opacity: 1, y: 0 }}
