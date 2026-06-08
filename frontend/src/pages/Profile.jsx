@@ -5,6 +5,7 @@ import { apiClient } from '../services/apiClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
+import confetti from 'canvas-confetti';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -159,6 +160,15 @@ const Profile = () => {
           report.id === id ? { ...report, status: 'returned' } : report
         ));
         toast.success('Status berhasil diperbarui!', 'Diperbarui');
+        try {
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+        } catch (e) {
+          console.error("Gagal menjalankan ledakan confetti:", e);
+        }
       }
     }
   };
