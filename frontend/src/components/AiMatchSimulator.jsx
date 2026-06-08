@@ -349,21 +349,53 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
               </div>
 
               <div className="bg-surface border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
-                <div className="flex flex-col items-center justify-center py-14 px-8 text-center">
-                  <div className="w-20 h-20 rounded-full bg-outline-variant/10 flex items-center justify-center mb-5">
-                    <span className="material-symbols-outlined text-4xl text-outline-variant">search_off</span>
+                {/* Top banner */}
+                <div className="bg-surface-container-low/60 border-b border-outline-variant/30 px-8 py-5">
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-outline-variant/15 border border-outline-variant/20 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-3xl text-outline-variant">search_off</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold text-on-surface mb-1">Tidak Ditemukan Kecocokan</h3>
+                      <p className="text-sm text-on-surface-variant leading-relaxed">
+                        AI telah memindai <strong>{activeFound.length}</strong> laporan temuan di database namun tidak menemukan kecocokan signifikan untuk <strong>"{activeLostItem?.title}"</strong>.
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-2">Tidak Ditemukan Kecocokan</h3>
-                  <p className="text-sm text-on-surface-variant max-w-sm leading-relaxed mb-4">
-                    AI telah memindai <strong>{activeFound.length}</strong> laporan barang temuan di database, namun tidak menemukan kecocokan yang signifikan untuk <strong>"{activeLostItem?.title}"</strong>.
-                  </p>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl">
-                    <span className="material-symbols-outlined text-outline text-[16px]">info</span>
-                    <span className="text-xs text-on-surface-variant">Skor tertinggi hanya <strong>{matchRate}%</strong> — di bawah ambang batas minimum (25%)</span>
+                </div>
+
+                {/* Info grid */}
+                <div className="p-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                      <span className="material-symbols-outlined text-xl text-outline">query_stats</span>
+                      <div>
+                        <p className="text-lg font-black text-on-surface tabular-nums">{matchRate}%</p>
+                        <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Skor Tertinggi</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                      <span className="material-symbols-outlined text-xl text-outline">database</span>
+                      <div>
+                        <p className="text-lg font-black text-on-surface tabular-nums">{activeFound.length}</p>
+                        <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Data Dipindai</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                      <span className="material-symbols-outlined text-xl text-outline">trending_down</span>
+                      <div>
+                        <p className="text-lg font-black text-on-surface">&lt; 25%</p>
+                        <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Ambang Batas</p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-outline mt-4 max-w-xs leading-relaxed">
-                    Barang ini mungkin belum dilaporkan sebagai temuan. Coba cek kembali nanti atau laporkan ke pihak kampus.
-                  </p>
+
+                  <div className="flex items-start gap-2.5 p-4 bg-primary/4 border border-primary/15 rounded-xl">
+                    <span className="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0">lightbulb</span>
+                    <p className="text-xs text-on-surface-variant leading-relaxed">
+                      <strong className="text-on-surface">Saran:</strong> Barang ini mungkin belum dilaporkan sebagai temuan oleh penemu. Coba periksa kembali nanti atau laporkan langsung ke pos keamanan kampus.
+                    </p>
+                  </div>
                 </div>
               </div>
 
