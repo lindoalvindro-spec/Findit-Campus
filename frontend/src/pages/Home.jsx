@@ -850,7 +850,10 @@ const Home = () => {
         </section>
 
         {/* AI Match Simulator */}
-        <AiMatchSimulator />
+        <AiMatchSimulator 
+          lostItems={mapAllItems.filter(i => i.status === 'lost')} 
+          foundItems={mapAllItems.filter(i => i.status === 'found')} 
+        />
 
         {/* Interactive Campus Map Section */}
         <section className="py-20 bg-surface border-b border-outline-variant/30 relative z-10">

@@ -1,107 +1,196 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const testCases = [
+// Fallback mockup data in case database is empty
+const fallbackLostItems = [
   {
-    id: 1,
-    name: 'KTM Mahasiswa UIN',
-    lost: {
-      title: 'KTM UIN Suska Riau',
-      owner: 'Reza Amanda',
-      location: 'Perpustakaan Lt. 2',
-      details: 'KTM atas nama Reza Amanda, NIM 12250111xxx, Fakultas Tarbiyah.',
-      image: null,
-      icon: 'badge'
-    },
-    found: {
-      title: 'Kartu Tanda Mahasiswa UIN',
-      finder: 'Fajar Pratama',
-      location: 'Meja Belajar Perpustakaan',
-      details: 'Ditemukan KTM UIN Suska di perpus lt 2 atas nama Reza A.',
-      image: null,
-      icon: 'badge'
-    },
-    matchRate: 96,
-    reasons: [
-      'Nama Pelapor cocok (Reza Amanda)',
-      'Lokasi kejadian sangat dekat (Perpustakaan)',
-      'Tipe dokumen cocok (KTM Mahasiswa)'
-    ]
+    id: 'mock-lost-1',
+    title: 'KTM UIN Suska Riau',
+    users: { full_name: 'Reza Amanda' },
+    location: 'Perpustakaan Lt. 2',
+    category: 'Kartu/Dokumen',
+    description: 'KTM atas nama Reza Amanda, NIM 12250111xxx, Fakultas Tarbiyah.',
+    status: 'lost',
+    icon: 'badge'
   },
   {
-    id: 2,
-    name: 'Kunci Motor Honda',
-    lost: {
-      title: 'Kunci Honda Vario Black',
-      owner: 'Dian Saputra',
-      location: 'Parkiran Tarbiyah',
-      details: 'Kunci motor Honda dengan gantungan kulit coklat bertuliskan Eiger.',
-      image: null,
-      icon: 'key'
-    },
-    found: {
-      title: 'Kunci Motor Honda & Gantungan',
-      finder: 'Siti Rahma',
-      location: 'Parkiran Tarbiyah Dekat Pohon',
-      details: 'Ditemukan kunci motor Honda dengan dompet gantungan kulit coklat.',
-      image: null,
-      icon: 'key'
-    },
-    matchRate: 92,
-    reasons: [
-      'Merk kunci cocok (Honda)',
-      'Aksesoris gantungan kulit coklat identik',
-      'Lokasi penemuan persis (Parkiran Tarbiyah)'
-    ]
+    id: 'mock-lost-2',
+    title: 'Kunci Vario Hitam',
+    users: { full_name: 'Dian Saputra' },
+    location: 'Parkiran Tarbiyah',
+    category: 'Lainnya',
+    description: 'Kunci motor Honda dengan gantungan kulit coklat bertuliskan Eiger.',
+    status: 'lost',
+    icon: 'key'
   },
   {
-    id: 3,
-    name: 'Dompet Kulit Eiger',
-    lost: {
-      title: 'Dompet Eiger Coklat',
-      owner: 'Rian Hidayat',
-      location: 'Masjid Al-Jamiah',
-      details: 'Dompet kulit coklat merk Eiger berisi KTP, KTM, dan uang tunai.',
-      image: null,
-      icon: 'account_balance_wallet'
-    },
-    found: {
-      title: 'Dompet Kulit Pria Cokelat',
-      finder: 'Ahmad Fauzi',
-      location: 'Tempat Wudhu Masjid',
-      details: 'Menemukan dompet kulit warna coklat di area tempat wudhu masjid kampus.',
-      image: null,
-      icon: 'account_balance_wallet'
-    },
-    matchRate: 89,
-    reasons: [
-      'Bahan & warna dompet identik (Kulit Coklat)',
-      'Lokasi kejadian sinkron (Masjid Al-Jamiah)',
-      'Isi identitas dalam dompet sesuai data pelapor'
-    ]
+    id: 'mock-lost-3',
+    title: 'Dompet Eiger Coklat',
+    users: { full_name: 'Rian Hidayat' },
+    location: 'Masjid Al-Jamiah',
+    category: 'Lainnya',
+    description: 'Dompet kulit coklat merk Eiger berisi KTP, KTM, dan uang tunai.',
+    status: 'lost',
+    icon: 'account_balance_wallet'
   }
 ];
 
-const AiMatchSimulator = () => {
-  const [activeCaseIndex, setActiveCaseIndex] = useState(0);
+const fallbackFoundItems = [
+  {
+    id: 'mock-found-1',
+    title: 'Kartu Tanda Mahasiswa UIN',
+    users: { full_name: 'Fajar Pratama' },
+    location: 'Meja Belajar Perpustakaan',
+    category: 'Kartu/Dokumen',
+    description: 'Ditemukan KTM UIN Suska di perpus lt 2 atas nama Reza A.',
+    status: 'found',
+    icon: 'badge'
+  },
+  {
+    id: 'mock-found-2',
+    title: 'Kunci Motor Honda & Gantungan',
+    users: { full_name: 'Siti Rahma' },
+    location: 'Parkiran Tarbiyah Dekat Pohon',
+    category: 'Lainnya',
+    description: 'Ditemukan kunci motor Honda dengan dompet gantungan kulit coklat.',
+    status: 'found',
+    icon: 'key'
+  },
+  {
+    id: 'mock-found-3',
+    title: 'Dompet Kulit Pria Cokelat',
+    users: { full_name: 'Ahmad Fauzi' },
+    location: 'Tempat Wudhu Masjid',
+    category: 'Lainnya',
+    description: 'Menemukan dompet kulit warna coklat di area tempat wudhu masjid kampus.',
+    status: 'found',
+    icon: 'account_balance_wallet'
+  }
+];
+
+const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
+  const [isUsingRealData, setIsUsingRealData] = useState(false);
+  const [selectedLostId, setSelectedLostId] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStepText, setScanStepText] = useState('');
   const [isMatched, setIsMatched] = useState(false);
 
-  const activeCase = testCases[activeCaseIndex];
+  // Match result states
+  const [activeLostItem, setActiveLostItem] = useState(null);
+  const [bestFoundItem, setBestFoundItem] = useState(null);
+  const [matchRate, setMatchRate] = useState(0);
+  const [reasons, setReasons] = useState([]);
+
+  // Determine active lists
+  const activeLostList = lostItems.length > 0 ? lostItems : fallbackLostItems;
+  const activeFoundList = foundItems.length > 0 ? foundItems : fallbackFoundItems;
+
+  useEffect(() => {
+    setIsUsingRealData(lostItems.length > 0);
+    if (activeLostList.length > 0) {
+      setSelectedLostId(activeLostList[0].id);
+      setActiveLostItem(activeLostList[0]);
+    }
+  }, [lostItems, foundItems]);
+
+  useEffect(() => {
+    if (selectedLostId) {
+      const selected = activeLostList.find(item => item.id === selectedLostId);
+      if (selected) {
+        setActiveLostItem(selected);
+        setIsMatched(false); // Reset match state when selection changes
+      }
+    }
+  }, [selectedLostId]);
+
+  // Keyword helper for similarity check
+  const getKeywords = (text = '') => {
+    const commonWords = ['barang', 'yang', 'dengan', 'untuk', 'pada', 'dan', 'atau', 'saya', 'oleh', 'dari', 'bisa', 'ada', 'di'];
+    return text
+      .toLowerCase()
+      .split(/[\s,./?()]+/)
+      .filter(word => word.length > 2 && !commonWords.includes(word));
+  };
+
+  const calculateMatch = (lost, foundList) => {
+    if (!lost || foundList.length === 0) return null;
+
+    let bestMatch = null;
+    let highestScore = 0;
+    let bestReasons = [];
+
+    const lostTitleKeywords = getKeywords(lost.title);
+    const lostDescKeywords = getKeywords(lost.description);
+    const lostLocKeywords = getKeywords(lost.location);
+
+    foundList.forEach(found => {
+      let score = 10; // baseline score
+      const currentReasons = [];
+
+      // 1. Category check
+      if (lost.category && found.category && lost.category === found.category && lost.category !== 'Lainnya') {
+        score += 35;
+        currentReasons.push(`Kategori barang identik: "${lost.category}"`);
+      }
+
+      // 2. Location keyword intersection
+      const foundLocKeywords = getKeywords(found.location);
+      const matchingLocs = lostLocKeywords.filter(k => foundLocKeywords.includes(k));
+      if (matchingLocs.length > 0) {
+        score += 25;
+        currentReasons.push(`Lokasi kejadian sinkron di sekitar "${found.location}"`);
+      }
+
+      // 3. Title & Description keyword intersection
+      const foundTitleKeywords = getKeywords(found.title);
+      const foundDescKeywords = getKeywords(found.description);
+
+      const matchingTitle = lostTitleKeywords.filter(k => foundTitleKeywords.includes(k));
+      const matchingDesc = lostDescKeywords.filter(k => foundDescKeywords.includes(k));
+
+      if (matchingTitle.length > 0) {
+        score += 20;
+        currentReasons.push(`Judul barang memiliki kemiripan kata kunci: "${matchingTitle.slice(0, 2).join(', ')}"`);
+      }
+      if (matchingDesc.length > 0) {
+        const points = Math.min(matchingDesc.length * 5, 20);
+        score += points;
+        currentReasons.push(`Ditemukan kata kunci deskripsi serupa: "${matchingDesc.slice(0, 3).join(', ')}"`);
+      }
+
+      // Cap at 98%
+      const finalScore = Math.min(score, 98);
+
+      if (finalScore > highestScore) {
+        highestScore = finalScore;
+        bestMatch = found;
+        bestReasons = currentReasons.length > 0 ? currentReasons : ["Kesamaan tipe barang secara umum di lingkungan kampus"];
+      }
+    });
+
+    return {
+      item: bestMatch,
+      score: highestScore,
+      reasons: bestReasons
+    };
+  };
 
   const startSimulation = () => {
+    if (!activeLostItem) return;
+
     setIsScanning(true);
     setIsMatched(false);
     setScanProgress(0);
-    setScanStepText('Memulai pencocokan AI...');
+    setScanStepText('Mengambil data laporan...');
+
+    const result = calculateMatch(activeLostItem, activeFoundList);
 
     const steps = [
-      { progress: 20, text: 'Menganalisis kategori barang...' },
-      { progress: 50, text: 'Membandingkan kecocokan nama & deskripsi...' },
-      { progress: 80, text: 'Memvalidasi kesesuaian lokasi kejadian...' },
-      { progress: 100, text: 'Pencocokan selesai!' }
+      { progress: 25, text: 'Memindai kategori barang di database...' },
+      { progress: 60, text: 'Menganalisis kemiripan lokasi penemuan...' },
+      { progress: 85, text: 'Mencocokkan kata kunci deskripsi dan metadata...' },
+      { progress: 100, text: 'Koneksi pencocokan AI berhasil!' }
     ];
 
     steps.forEach((step, idx) => {
@@ -111,19 +200,29 @@ const AiMatchSimulator = () => {
         if (step.progress === 100) {
           setTimeout(() => {
             setIsScanning(false);
-            setIsMatched(true);
+            if (result) {
+              setBestFoundItem(result.item);
+              setMatchRate(result.score);
+              setReasons(result.reasons);
+              setIsMatched(true);
+            }
           }, 600);
         }
       }, (idx + 1) * 700);
     });
   };
 
-  const changeCase = (index) => {
-    setActiveCaseIndex(index);
-    setIsScanning(false);
-    setIsMatched(false);
-    setScanProgress(0);
-    setScanStepText('');
+  const getIcon = (item) => {
+    if (!item) return 'inventory_2';
+    if (item.icon) return item.icon;
+    const title = (item.title || '').toLowerCase();
+    const cat = (item.category || '').toLowerCase();
+    if (cat.includes('kartu') || title.includes('ktm') || title.includes('kartu')) return 'badge';
+    if (title.includes('kunci') || title.includes('key')) return 'key';
+    if (title.includes('dompet') || title.includes('wallet')) return 'account_balance_wallet';
+    if (title.includes('hp') || title.includes('phone') || title.includes('handphone')) return 'phone_android';
+    if (title.includes('tas') || title.includes('bag') || title.includes('ransel')) return 'backpack';
+    return 'inventory_2';
   };
 
   return (
@@ -132,36 +231,55 @@ const AiMatchSimulator = () => {
         
         {/* Title */}
         <div className="mb-12 text-center">
-          <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Fitur AI Pintar</span>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">Simulasi AI Auto-Matchmaker</h2>
+          <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">
+            {isUsingRealData ? 'Fitur AI Riil' : 'Fitur AI Pintar'}
+          </span>
+          <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">
+            {isUsingRealData ? 'AI Auto-Matchmaker (Pencocokan Riil)' : 'Simulasi AI Auto-Matchmaker'}
+          </h2>
           <p className="text-on-surface-variant max-w-[576px] mx-auto mt-3 font-body-md">
-            Bagaimana AI kami bekerja di balik layar memindai kemiripan antara laporan kehilangan dan temuan secara otomatis.
+            {isUsingRealData 
+              ? 'Pilih salah satu laporan kehilangan aktif untuk mencari barang temuan yang paling cocok secara langsung dari database.'
+              : 'Bagaimana AI bekerja di balik layar memindai kemiripan antara laporan kehilangan dan temuan secara otomatis.'}
           </p>
           <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
         </div>
 
-        {/* Case Selectors */}
-        <div className="flex flex-wrap gap-3 justify-center mb-10">
-          {testCases.map((tc, idx) => (
-            <button
-              key={tc.id}
-              onClick={() => changeCase(idx)}
-              disabled={isScanning}
-              className={`px-5 py-2.5 rounded-full font-label-md text-label-md font-semibold transition-all cursor-pointer border ${
-                activeCaseIndex === idx
-                  ? 'bg-primary text-on-primary border-primary shadow-md'
-                  : 'bg-surface hover:bg-surface-container-high text-on-surface border-outline-variant/50'
-              } disabled:opacity-50`}
-            >
-              Simulasi: {tc.name}
-            </button>
-          ))}
+        {/* Real Data Indicator Badge */}
+        <div className="flex justify-center mb-6">
+          <span className={`text-xs font-bold px-4 py-1.5 rounded-full border flex items-center gap-1.5 shadow-sm ${
+            isUsingRealData 
+              ? 'bg-success-container text-on-success-container border-success/30' 
+              : 'bg-surface border-outline-variant text-on-surface-variant/80'
+          }`}>
+            <span className={`w-2 h-2 rounded-full ${isUsingRealData ? 'bg-success animate-pulse' : 'bg-outline-variant'}`} />
+            {isUsingRealData ? 'Mode: Database Riil Aktif' : 'Mode: Demo Simulasi'}
+          </span>
         </div>
 
-        {/* Simulator Area */}
+        {/* Dropdown Selector */}
+        <div className="flex flex-col items-center max-w-md mx-auto mb-10 w-full px-4">
+          <label className="font-label-sm text-label-sm text-outline mb-2 block font-semibold uppercase tracking-wider">
+            Pilih Laporan Barang Hilang:
+          </label>
+          <select
+            value={selectedLostId}
+            onChange={(e) => setSelectedLostId(e.target.value)}
+            disabled={isScanning}
+            className="w-full bg-surface border border-outline-variant/60 rounded-2xl px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-left cursor-pointer shadow-sm hover:border-outline transition-all"
+          >
+            {activeLostList.map(item => (
+              <option key={item.id} value={item.id}>
+                {item.title} ({item.users?.full_name || 'Pelapor'})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Simulator Dashboard */}
         <div className="bg-surface border border-outline-variant/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 md:p-10 relative overflow-hidden max-w-[900px] mx-auto">
           
-          {/* Laser Scanning Effect Layer */}
+          {/* Laser Scanning Effect */}
           <AnimatePresence>
             {isScanning && (
               <motion.div
@@ -176,40 +294,43 @@ const AiMatchSimulator = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-11 gap-6 items-center">
             
-            {/* Left Card: Lost Item */}
+            {/* Left Card: Selected Lost Item */}
             <div className="md:col-span-4 flex flex-col">
               <div className="text-xs font-bold text-error uppercase tracking-wider mb-2 flex items-center gap-1.5 justify-center md:justify-start">
                 <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
-                Barang Hilang (Laporan)
+                Barang Hilang
               </div>
-              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 ${
+              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 min-h-[240px] flex flex-col justify-between ${
                 isScanning ? 'border-primary/40 shadow-[0_0_20px_rgba(40,91,199,0.05)] scale-98' : 'border-outline-variant/60'
               }`}>
-                <div className="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error mb-4">
-                  <span className="material-symbols-outlined text-2xl">{activeCase.lost.icon}</span>
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error mb-4">
+                    <span className="material-symbols-outlined text-2xl">{getIcon(activeLostItem)}</span>
+                  </div>
+                  <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">
+                    {activeLostItem ? activeLostItem.title : '-'}
+                  </h4>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
+                    <span className="material-symbols-outlined text-sm text-outline">person</span>
+                    Pelapor: {activeLostItem?.users?.full_name || 'Anonim'}
+                  </p>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
+                    <span className="material-symbols-outlined text-sm text-outline">location_on</span>
+                    Lokasi: {activeLostItem?.location || 'Tidak diketahui'}
+                  </p>
                 </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">{activeCase.lost.title}</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
-                  <span className="material-symbols-outlined text-sm text-outline">person</span>
-                  Owner: {activeCase.lost.owner}
-                </p>
-                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
-                  <span className="material-symbols-outlined text-sm text-outline">location_on</span>
-                  Lokasi: {activeCase.lost.location}
-                </p>
-                <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left">
-                  "{activeCase.lost.details}"
+                <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left line-clamp-3">
+                  "{activeLostItem?.description || 'Tidak ada deskripsi.'}"
                 </p>
               </div>
             </div>
 
-            {/* Middle Match Action Area */}
+            {/* Middle Action Circle */}
             <div className="md:col-span-3 flex flex-col items-center justify-center py-4 relative">
               <AnimatePresence mode="wait">
                 {isScanning ? (
-                  /* Loading Scanner */
                   <motion.div
-                    key="scanning-ui"
+                    key="scanning"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
@@ -221,12 +342,11 @@ const AiMatchSimulator = () => {
                       {scanStepText}
                     </div>
                   </motion.div>
-                ) : isMatched ? (
-                  /* Success/Match Found UI */
+                ) : isMatched && bestFoundItem ? (
                   <motion.div
-                    key="match-ui"
-                    initial={{ opacity: 0, scale: 0.5, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    key="match-success"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     transition={{ type: 'spring', damping: 12 }}
                     className="flex flex-col items-center text-center z-10"
                   >
@@ -238,19 +358,18 @@ const AiMatchSimulator = () => {
                       <span className="material-symbols-outlined text-3xl font-bold">verified</span>
                     </motion.div>
                     
-                    <span className="text-[11px] font-bold tracking-widest text-success uppercase mb-1">Kecocokan AI</span>
+                    <span className="text-[11px] font-bold tracking-widest text-success uppercase mb-1">Skor AI</span>
                     <h3 className="font-headline-md text-headline-md text-success font-black leading-none mb-2">
-                      {activeCase.matchRate}%
+                      {matchRate}%
                     </h3>
                     
                     <span className="text-xs bg-success-container text-on-success-container border border-success/20 px-3 py-1 rounded-full font-bold">
-                      Match Sesuai!
+                      Kecocokan Ditemukan
                     </span>
                   </motion.div>
                 ) : (
-                  /* Inactive / Start Button UI */
                   <motion.div
-                    key="start-ui"
+                    key="idle"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -261,7 +380,7 @@ const AiMatchSimulator = () => {
                     </div>
                     <button
                       onClick={startSimulation}
-                      className="bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-all font-label-md text-label-md px-4 py-2.5 rounded-xl cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
+                      className="bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-all font-label-md text-label-md px-5 py-2.5 rounded-xl cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
                     >
                       Jalankan AI Match
                     </button>
@@ -270,38 +389,51 @@ const AiMatchSimulator = () => {
               </AnimatePresence>
             </div>
 
-            {/* Right Card: Found Item */}
+            {/* Right Card: Matching Found Item */}
             <div className="md:col-span-4 flex flex-col">
               <div className="text-xs font-bold text-success uppercase tracking-wider mb-2 flex items-center gap-1.5 justify-center md:justify-start">
                 <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                Barang Temuan (Laporan)
+                Barang Temuan
               </div>
-              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 ${
+              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 min-h-[240px] flex flex-col justify-between ${
                 isScanning ? 'border-primary/40 shadow-[0_0_20px_rgba(40,91,199,0.05)] scale-98' : 'border-outline-variant/60'
               }`}>
-                <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4">
-                  <span className="material-symbols-outlined text-2xl">{activeCase.found.icon}</span>
-                </div>
-                <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">{activeCase.found.title}</h4>
-                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
-                  <span className="material-symbols-outlined text-sm text-outline">person</span>
-                  Finder: {activeCase.found.finder}
-                </p>
-                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
-                  <span className="material-symbols-outlined text-sm text-outline">location_on</span>
-                  Lokasi: {activeCase.found.location}
-                </p>
-                <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left">
-                  "{activeCase.found.details}"
-                </p>
+                {isMatched && bestFoundItem ? (
+                  <>
+                    <div>
+                      <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4">
+                        <span className="material-symbols-outlined text-2xl">{getIcon(bestFoundItem)}</span>
+                      </div>
+                      <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">
+                        {bestFoundItem.title}
+                      </h4>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
+                        <span className="material-symbols-outlined text-sm text-outline">person</span>
+                        Finder: {bestFoundItem.users?.full_name || 'Anonim'}
+                      </p>
+                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
+                        <span className="material-symbols-outlined text-sm text-outline">location_on</span>
+                        Lokasi: {bestFoundItem.location || 'Tidak diketahui'}
+                      </p>
+                    </div>
+                    <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left line-clamp-3">
+                      "{bestFoundItem.description || 'Tidak ada deskripsi.'}"
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center flex-grow text-center text-outline/40 py-10">
+                    <span className="material-symbols-outlined text-[48px] mb-2">find_in_page</span>
+                    <p className="text-xs font-semibold">Menunggu analisis AI</p>
+                  </div>
+                )}
               </div>
             </div>
 
           </div>
 
-          {/* Collapsible Match Analysis Details */}
+          {/* Dynamic Match Analysis Reasons */}
           <AnimatePresence>
-            {isMatched && (
+            {isMatched && reasons.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -313,7 +445,7 @@ const AiMatchSimulator = () => {
                   Analisis Kesesuaian Algoritma AI:
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {activeCase.reasons.map((reason, i) => (
+                  {reasons.map((reason, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
