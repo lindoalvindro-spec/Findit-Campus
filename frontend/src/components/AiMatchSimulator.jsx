@@ -1,470 +1,439 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Fallback mockup data in case database is empty
 const fallbackLostItems = [
-  {
-    id: 'mock-lost-1',
-    title: 'KTM UIN Suska Riau',
-    users: { full_name: 'Reza Amanda' },
-    location: 'Perpustakaan Lt. 2',
-    category: 'Kartu/Dokumen',
-    description: 'KTM atas nama Reza Amanda, NIM 12250111xxx, Fakultas Tarbiyah.',
-    status: 'lost',
-    icon: 'badge'
-  },
-  {
-    id: 'mock-lost-2',
-    title: 'Kunci Vario Hitam',
-    users: { full_name: 'Dian Saputra' },
-    location: 'Parkiran Tarbiyah',
-    category: 'Lainnya',
-    description: 'Kunci motor Honda dengan gantungan kulit coklat bertuliskan Eiger.',
-    status: 'lost',
-    icon: 'key'
-  },
-  {
-    id: 'mock-lost-3',
-    title: 'Dompet Eiger Coklat',
-    users: { full_name: 'Rian Hidayat' },
-    location: 'Masjid Al-Jamiah',
-    category: 'Lainnya',
-    description: 'Dompet kulit coklat merk Eiger berisi KTP, KTM, dan uang tunai.',
-    status: 'lost',
-    icon: 'account_balance_wallet'
-  }
+  { id: 'mock-lost-1', title: 'KTM UIN Suska Riau', users: { full_name: 'Reza Amanda' }, location: 'Perpustakaan Lt. 2', category: 'Kartu/Dokumen', description: 'KTM atas nama Reza Amanda, NIM 12250111xxx, Fakultas Tarbiyah.', status: 'lost' },
+  { id: 'mock-lost-2', title: 'Kunci Vario Hitam', users: { full_name: 'Dian Saputra' }, location: 'Parkiran Tarbiyah', category: 'Lainnya', description: 'Kunci motor Honda dengan gantungan kulit coklat bertuliskan Eiger.', status: 'lost' },
+  { id: 'mock-lost-3', title: 'Dompet Eiger Coklat', users: { full_name: 'Rian Hidayat' }, location: 'Masjid Al-Jamiah', category: 'Lainnya', description: 'Dompet kulit coklat merk Eiger berisi KTP, KTM, dan uang tunai.', status: 'lost' }
+];
+const fallbackFoundItems = [
+  { id: 'mock-found-1', title: 'Kartu Tanda Mahasiswa UIN', users: { full_name: 'Fajar Pratama' }, location: 'Meja Belajar Perpustakaan', category: 'Kartu/Dokumen', description: 'Ditemukan KTM UIN Suska di perpus lt 2 atas nama Reza A.', status: 'found' },
+  { id: 'mock-found-2', title: 'Kunci Motor Honda & Gantungan', users: { full_name: 'Siti Rahma' }, location: 'Parkiran Tarbiyah Dekat Pohon', category: 'Lainnya', description: 'Ditemukan kunci motor Honda dengan dompet gantungan kulit coklat.', status: 'found' },
+  { id: 'mock-found-3', title: 'Dompet Kulit Pria Cokelat', users: { full_name: 'Ahmad Fauzi' }, location: 'Tempat Wudhu Masjid', category: 'Lainnya', description: 'Menemukan dompet kulit warna coklat di area tempat wudhu masjid kampus.', status: 'found' }
 ];
 
-const fallbackFoundItems = [
-  {
-    id: 'mock-found-1',
-    title: 'Kartu Tanda Mahasiswa UIN',
-    users: { full_name: 'Fajar Pratama' },
-    location: 'Meja Belajar Perpustakaan',
-    category: 'Kartu/Dokumen',
-    description: 'Ditemukan KTM UIN Suska di perpus lt 2 atas nama Reza A.',
-    status: 'found',
-    icon: 'badge'
-  },
-  {
-    id: 'mock-found-2',
-    title: 'Kunci Motor Honda & Gantungan',
-    users: { full_name: 'Siti Rahma' },
-    location: 'Parkiran Tarbiyah Dekat Pohon',
-    category: 'Lainnya',
-    description: 'Ditemukan kunci motor Honda dengan dompet gantungan kulit coklat.',
-    status: 'found',
-    icon: 'key'
-  },
-  {
-    id: 'mock-found-3',
-    title: 'Dompet Kulit Pria Cokelat',
-    users: { full_name: 'Ahmad Fauzi' },
-    location: 'Tempat Wudhu Masjid',
-    category: 'Lainnya',
-    description: 'Menemukan dompet kulit warna coklat di area tempat wudhu masjid kampus.',
-    status: 'found',
-    icon: 'account_balance_wallet'
-  }
-];
+const getIcon = (item) => {
+  if (!item) return 'inventory_2';
+  if (item.icon) return item.icon;
+  const t = (item.title || '').toLowerCase();
+  const c = (item.category || '').toLowerCase();
+  if (c.includes('kartu') || t.includes('ktm') || t.includes('kartu') || t.includes('ktp')) return 'badge';
+  if (t.includes('kunci') || t.includes('key')) return 'key';
+  if (t.includes('dompet') || t.includes('wallet')) return 'account_balance_wallet';
+  if (t.includes('hp') || t.includes('phone') || t.includes('handphone')) return 'phone_android';
+  if (t.includes('tas') || t.includes('bag') || t.includes('ransel')) return 'backpack';
+  if (t.includes('charger') || t.includes('laptop') || t.includes('macbook')) return 'laptop_mac';
+  if (t.includes('almamater') || t.includes('jas') || t.includes('jaket')) return 'checkroom';
+  return 'inventory_2';
+};
+
+const getKeywords = (text = '') => {
+  const stop = ['barang','yang','dengan','untuk','pada','dan','atau','saya','oleh','dari','bisa','ada','di','ini','itu','ke','seorang','telah','sudah','baru','akan','jika','atas','nama','lainnya'];
+  return text.toLowerCase().split(/[\s,./?()\"]+/).filter(w => w.length > 2 && !stop.includes(w));
+};
+
+const calculateMatch = (lost, foundList) => {
+  if (!lost || foundList.length === 0) return null;
+  let bestMatch = null, highestScore = 0, bestReasons = [];
+  const lostTitleKw = getKeywords(lost.title);
+  const lostDescKw = getKeywords(lost.description);
+  const lostLocKw = getKeywords(lost.location);
+
+  foundList.forEach(found => {
+    let score = 10;
+    const reasons = [];
+    if (lost.category && found.category && lost.category === found.category && lost.category !== 'Lainnya') {
+      score += 35; reasons.push({ icon: 'category', text: `Kategori identik: "${lost.category}"` });
+    }
+    const fLocKw = getKeywords(found.location);
+    const mLocs = lostLocKw.filter(k => fLocKw.includes(k));
+    if (mLocs.length > 0) {
+      score += 25; reasons.push({ icon: 'location_on', text: `Lokasi sinkron: "${mLocs[0]}"` });
+    }
+    const fTitleKw = getKeywords(found.title);
+    const fDescKw = getKeywords(found.description);
+    const mTitle = lostTitleKw.filter(k => fTitleKw.includes(k));
+    const mDesc = lostDescKw.filter(k => fDescKw.includes(k));
+    if (mTitle.length > 0) {
+      score += 20; reasons.push({ icon: 'text_fields', text: `Judul mirip: "${mTitle.slice(0,2).join(', ')}"` });
+    }
+    if (mDesc.length > 0) {
+      score += Math.min(mDesc.length * 5, 20);
+      reasons.push({ icon: 'description', text: `Deskripsi serupa: "${mDesc.slice(0,3).join(', ')}"` });
+    }
+    const final = Math.min(score, 98);
+    if (final > highestScore) {
+      highestScore = final;
+      bestMatch = found;
+      bestReasons = reasons.length > 0 ? reasons : [{ icon: 'auto_awesome', text: 'Kesamaan tipe barang umum' }];
+    }
+  });
+  return { item: bestMatch, score: highestScore, reasons: bestReasons };
+};
 
 const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
-  const [isUsingRealData, setIsUsingRealData] = useState(false);
   const [selectedLostId, setSelectedLostId] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStepText, setScanStepText] = useState('');
   const [isMatched, setIsMatched] = useState(false);
-
-  // Match result states
   const [activeLostItem, setActiveLostItem] = useState(null);
   const [bestFoundItem, setBestFoundItem] = useState(null);
   const [matchRate, setMatchRate] = useState(0);
   const [reasons, setReasons] = useState([]);
+  const scrollRef = useRef(null);
 
-  // Determine active lists
-  const activeLostList = lostItems.length > 0 ? lostItems : fallbackLostItems;
-  const activeFoundList = foundItems.length > 0 ? foundItems : fallbackFoundItems;
+  const isReal = lostItems.length > 0;
+  const activeLost = isReal ? lostItems : fallbackLostItems;
+  const activeFound = isReal ? foundItems : fallbackFoundItems;
 
   useEffect(() => {
-    setIsUsingRealData(lostItems.length > 0);
-    if (activeLostList.length > 0) {
-      setSelectedLostId(activeLostList[0].id);
-      setActiveLostItem(activeLostList[0]);
+    if (activeLost.length > 0) {
+      setSelectedLostId(activeLost[0].id);
+      setActiveLostItem(activeLost[0]);
     }
   }, [lostItems, foundItems]);
 
   useEffect(() => {
     if (selectedLostId) {
-      const selected = activeLostList.find(item => item.id === selectedLostId);
-      if (selected) {
-        setActiveLostItem(selected);
-        setIsMatched(false); // Reset match state when selection changes
-      }
+      const s = activeLost.find(i => i.id === selectedLostId);
+      if (s) { setActiveLostItem(s); setIsMatched(false); setBestFoundItem(null); setReasons([]); }
     }
   }, [selectedLostId]);
 
-  // Keyword helper for similarity check
-  const getKeywords = (text = '') => {
-    const commonWords = ['barang', 'yang', 'dengan', 'untuk', 'pada', 'dan', 'atau', 'saya', 'oleh', 'dari', 'bisa', 'ada', 'di'];
-    return text
-      .toLowerCase()
-      .split(/[\s,./?()]+/)
-      .filter(word => word.length > 2 && !commonWords.includes(word));
-  };
-
-  const calculateMatch = (lost, foundList) => {
-    if (!lost || foundList.length === 0) return null;
-
-    let bestMatch = null;
-    let highestScore = 0;
-    let bestReasons = [];
-
-    const lostTitleKeywords = getKeywords(lost.title);
-    const lostDescKeywords = getKeywords(lost.description);
-    const lostLocKeywords = getKeywords(lost.location);
-
-    foundList.forEach(found => {
-      let score = 10; // baseline score
-      const currentReasons = [];
-
-      // 1. Category check
-      if (lost.category && found.category && lost.category === found.category && lost.category !== 'Lainnya') {
-        score += 35;
-        currentReasons.push(`Kategori barang identik: "${lost.category}"`);
-      }
-
-      // 2. Location keyword intersection
-      const foundLocKeywords = getKeywords(found.location);
-      const matchingLocs = lostLocKeywords.filter(k => foundLocKeywords.includes(k));
-      if (matchingLocs.length > 0) {
-        score += 25;
-        currentReasons.push(`Lokasi kejadian sinkron di sekitar "${found.location}"`);
-      }
-
-      // 3. Title & Description keyword intersection
-      const foundTitleKeywords = getKeywords(found.title);
-      const foundDescKeywords = getKeywords(found.description);
-
-      const matchingTitle = lostTitleKeywords.filter(k => foundTitleKeywords.includes(k));
-      const matchingDesc = lostDescKeywords.filter(k => foundDescKeywords.includes(k));
-
-      if (matchingTitle.length > 0) {
-        score += 20;
-        currentReasons.push(`Judul barang memiliki kemiripan kata kunci: "${matchingTitle.slice(0, 2).join(', ')}"`);
-      }
-      if (matchingDesc.length > 0) {
-        const points = Math.min(matchingDesc.length * 5, 20);
-        score += points;
-        currentReasons.push(`Ditemukan kata kunci deskripsi serupa: "${matchingDesc.slice(0, 3).join(', ')}"`);
-      }
-
-      // Cap at 98%
-      const finalScore = Math.min(score, 98);
-
-      if (finalScore > highestScore) {
-        highestScore = finalScore;
-        bestMatch = found;
-        bestReasons = currentReasons.length > 0 ? currentReasons : ["Kesamaan tipe barang secara umum di lingkungan kampus"];
-      }
-    });
-
-    return {
-      item: bestMatch,
-      score: highestScore,
-      reasons: bestReasons
-    };
-  };
-
-  const startSimulation = () => {
-    if (!activeLostItem) return;
-
-    setIsScanning(true);
-    setIsMatched(false);
-    setScanProgress(0);
-    setScanStepText('Mengambil data laporan...');
-
-    const result = calculateMatch(activeLostItem, activeFoundList);
-
+  const startScan = () => {
+    if (!activeLostItem || isScanning) return;
+    setIsScanning(true); setIsMatched(false); setScanProgress(0);
+    setScanStepText('Inisialisasi AI Engine...');
+    const result = calculateMatch(activeLostItem, activeFound);
     const steps = [
-      { progress: 25, text: 'Memindai kategori barang di database...' },
-      { progress: 60, text: 'Menganalisis kemiripan lokasi penemuan...' },
-      { progress: 85, text: 'Mencocokkan kata kunci deskripsi dan metadata...' },
-      { progress: 100, text: 'Koneksi pencocokan AI berhasil!' }
+      { p: 20, t: 'Memindai kategori barang...' },
+      { p: 45, t: 'Menganalisis kemiripan lokasi...' },
+      { p: 70, t: 'Mencocokkan deskripsi & kata kunci...' },
+      { p: 90, t: 'Menghitung skor kecocokan...' },
+      { p: 100, t: 'Pencocokan selesai!' }
     ];
-
     steps.forEach((step, idx) => {
       setTimeout(() => {
-        setScanProgress(step.progress);
-        setScanStepText(step.text);
-        if (step.progress === 100) {
+        setScanProgress(step.p); setScanStepText(step.t);
+        if (step.p === 100) {
           setTimeout(() => {
             setIsScanning(false);
-            if (result) {
-              setBestFoundItem(result.item);
-              setMatchRate(result.score);
-              setReasons(result.reasons);
-              setIsMatched(true);
-            }
-          }, 600);
+            if (result) { setBestFoundItem(result.item); setMatchRate(result.score); setReasons(result.reasons); setIsMatched(true); }
+          }, 500);
         }
-      }, (idx + 1) * 700);
+      }, (idx + 1) * 600);
     });
   };
 
-  const getIcon = (item) => {
-    if (!item) return 'inventory_2';
-    if (item.icon) return item.icon;
-    const title = (item.title || '').toLowerCase();
-    const cat = (item.category || '').toLowerCase();
-    if (cat.includes('kartu') || title.includes('ktm') || title.includes('kartu')) return 'badge';
-    if (title.includes('kunci') || title.includes('key')) return 'key';
-    if (title.includes('dompet') || title.includes('wallet')) return 'account_balance_wallet';
-    if (title.includes('hp') || title.includes('phone') || title.includes('handphone')) return 'phone_android';
-    if (title.includes('tas') || title.includes('bag') || title.includes('ransel')) return 'backpack';
-    return 'inventory_2';
-  };
+  const getScoreColor = (s) => s >= 60 ? 'text-success' : s >= 30 ? 'text-warning' : 'text-error';
+  const getScoreBg = (s) => s >= 60 ? 'bg-success/10 border-success/30' : s >= 30 ? 'bg-warning/10 border-warning/30' : 'bg-error/10 border-error/30';
+  const getScoreLabel = (s) => s >= 60 ? 'Tinggi' : s >= 30 ? 'Sedang' : 'Rendah';
 
   return (
-    <section className="py-20 bg-surface-container-low/40 relative z-10 border-t border-b border-outline-variant/30">
-      <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
+    <section className="py-20 bg-gradient-to-b from-surface via-surface-container-low/30 to-surface relative z-10 overflow-hidden">
+      {/* Decorative BG Blobs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[10%] -left-20 w-[400px] h-[400px] bg-primary/8 rounded-full blur-3xl" />
+        <div className="absolute bottom-[10%] -right-20 w-[350px] h-[350px] bg-secondary/8 rounded-full blur-3xl" />
+      </div>
+
+      <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto relative z-10">
         
-        {/* Title */}
-        <div className="mb-12 text-center">
-          <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">
-            {isUsingRealData ? 'Fitur AI Riil' : 'Fitur AI Pintar'}
-          </span>
-          <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">
-            {isUsingRealData ? 'AI Auto-Matchmaker (Pencocokan Riil)' : 'Simulasi AI Auto-Matchmaker'}
-          </h2>
-          <p className="text-on-surface-variant max-w-[576px] mx-auto mt-3 font-body-md">
-            {isUsingRealData 
-              ? 'Pilih salah satu laporan kehilangan aktif untuk mencari barang temuan yang paling cocok secara langsung dari database.'
-              : 'Bagaimana AI bekerja di balik layar memindai kemiripan antara laporan kehilangan dan temuan secara otomatis.'}
-          </p>
-          <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
-        </div>
-
-        {/* Real Data Indicator Badge */}
-        <div className="flex justify-center mb-6">
-          <span className={`text-xs font-bold px-4 py-1.5 rounded-full border flex items-center gap-1.5 shadow-sm ${
-            isUsingRealData 
-              ? 'bg-success-container text-on-success-container border-success/30' 
-              : 'bg-surface border-outline-variant text-on-surface-variant/80'
-          }`}>
-            <span className={`w-2 h-2 rounded-full ${isUsingRealData ? 'bg-success animate-pulse' : 'bg-outline-variant'}`} />
-            {isUsingRealData ? 'Mode: Database Riil Aktif' : 'Mode: Demo Simulasi'}
-          </span>
-        </div>
-
-        {/* Dropdown Selector */}
-        <div className="flex flex-col items-center max-w-md mx-auto mb-10 w-full px-4">
-          <label className="font-label-sm text-label-sm text-outline mb-2 block font-semibold uppercase tracking-wider">
-            Pilih Laporan Barang Hilang:
-          </label>
-          <select
-            value={selectedLostId}
-            onChange={(e) => setSelectedLostId(e.target.value)}
-            disabled={isScanning}
-            className="w-full bg-surface border border-outline-variant/60 rounded-2xl px-4 py-3 text-on-surface font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-left cursor-pointer shadow-sm hover:border-outline transition-all"
+        {/* Header */}
+        <div className="mb-14 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-4"
           >
-            {activeLostList.map(item => (
-              <option key={item.id} value={item.id}>
-                {item.title} ({item.users?.full_name || 'Pelapor'})
-              </option>
-            ))}
-          </select>
+            <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+            <span className="text-xs font-bold text-primary tracking-wider uppercase">
+              {isReal ? 'AI Matchmaker — Data Riil' : 'AI Matchmaker — Demo'}
+            </span>
+            <span className={`w-2 h-2 rounded-full ${isReal ? 'bg-success animate-pulse' : 'bg-outline-variant'}`} />
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="font-headline-lg text-headline-lg text-on-surface font-bold"
+          >
+            Pencocokan Otomatis Berbasis AI
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-on-surface-variant max-w-[560px] mx-auto mt-3 font-body-md leading-relaxed"
+          >
+            Pilih laporan kehilangan, lalu biarkan AI mencari barang temuan paling cocok dari seluruh database secara real-time.
+          </motion.p>
         </div>
 
-        {/* Simulator Dashboard */}
-        <div className="bg-surface border border-outline-variant/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl p-6 md:p-10 relative overflow-hidden max-w-[900px] mx-auto">
-          
-          {/* Laser Scanning Effect */}
+        {/* Step 1: Horizontal Scrollable Item Picker */}
+        <div className="mb-10">
+          <div className="flex items-center gap-2 mb-4 px-1">
+            <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[18px]">touch_app</span>
+            </span>
+            <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 1:</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Pilih laporan kehilangan</span>
+          </div>
+
+          <div className="relative">
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory scrollbar-none px-1">
+              {activeLost.map((item) => {
+                const isActive = selectedLostId === item.id;
+                return (
+                  <motion.button
+                    key={item.id}
+                    whileHover={{ y: -3 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedLostId(item.id)}
+                    disabled={isScanning}
+                    className={`snap-start shrink-0 w-[200px] p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer group relative overflow-hidden disabled:opacity-60 ${
+                      isActive
+                        ? 'border-primary bg-primary/5 shadow-[0_4px_20px_rgba(0,40,142,0.12)]'
+                        : 'border-outline-variant/40 bg-surface hover:border-primary/40 hover:shadow-md'
+                    }`}
+                  >
+                    {/* Active check indicator */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activePicker"
+                        className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
+                      >
+                        <span className="material-symbols-outlined text-on-primary text-[14px]">check</span>
+                      </motion.div>
+                    )}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                      isActive ? 'bg-primary/15 text-primary' : 'bg-surface-container-high/60 text-outline group-hover:text-primary group-hover:bg-primary/10'
+                    }`}>
+                      <span className="material-symbols-outlined text-xl">{getIcon(item)}</span>
+                    </div>
+                    <h4 className={`text-sm font-bold mb-1 truncate transition-colors ${
+                      isActive ? 'text-primary' : 'text-on-surface group-hover:text-primary'
+                    }`}>
+                      {item.title}
+                    </h4>
+                    <p className="text-[11px] text-on-surface-variant truncate flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px]">person</span>
+                      {item.users?.full_name || 'Anonim'}
+                    </p>
+                    <p className="text-[11px] text-outline truncate flex items-center gap-1 mt-0.5">
+                      <span className="material-symbols-outlined text-[12px]">location_on</span>
+                      {item.location || '-'}
+                    </p>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Step 2: Action Button */}
+        <div className="flex flex-col items-center mb-10">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[18px]">bolt</span>
+            </span>
+            <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 2:</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant">Jalankan pencocokan AI</span>
+          </div>
+
+          {!isScanning && !isMatched && (
+            <motion.button
+              whileHover={{ scale: 1.04, boxShadow: '0 8px 30px rgba(0,40,142,0.2)' }}
+              whileTap={{ scale: 0.96 }}
+              onClick={startScan}
+              className="bg-gradient-to-r from-primary to-[#1e40af] text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-2xl cursor-pointer shadow-lg flex items-center gap-2.5 transition-all"
+            >
+              <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+              Jalankan AI Matchmaker
+            </motion.button>
+          )}
+
+          {/* Scanning Progress Bar */}
           <AnimatePresence>
             {isScanning && (
               <motion.div
-                initial={{ top: '0%' }}
-                animate={{ top: ['0%', '100%', '0%'] }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_15px_#295bc7] z-20 pointer-events-none"
-              />
-            )}
-          </AnimatePresence>
-
-          <div className="grid grid-cols-1 md:grid-cols-11 gap-6 items-center">
-            
-            {/* Left Card: Selected Lost Item */}
-            <div className="md:col-span-4 flex flex-col">
-              <div className="text-xs font-bold text-error uppercase tracking-wider mb-2 flex items-center gap-1.5 justify-center md:justify-start">
-                <span className="w-2 h-2 rounded-full bg-error animate-pulse"></span>
-                Barang Hilang
-              </div>
-              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 min-h-[240px] flex flex-col justify-between ${
-                isScanning ? 'border-primary/40 shadow-[0_0_20px_rgba(40,91,199,0.05)] scale-98' : 'border-outline-variant/60'
-              }`}>
-                <div>
-                  <div className="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error mb-4">
-                    <span className="material-symbols-outlined text-2xl">{getIcon(activeLostItem)}</span>
-                  </div>
-                  <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">
-                    {activeLostItem ? activeLostItem.title : '-'}
-                  </h4>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
-                    <span className="material-symbols-outlined text-sm text-outline">person</span>
-                    Pelapor: {activeLostItem?.users?.full_name || 'Anonim'}
-                  </p>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
-                    <span className="material-symbols-outlined text-sm text-outline">location_on</span>
-                    Lokasi: {activeLostItem?.location || 'Tidak diketahui'}
-                  </p>
-                </div>
-                <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left line-clamp-3">
-                  "{activeLostItem?.description || 'Tidak ada deskripsi.'}"
-                </p>
-              </div>
-            </div>
-
-            {/* Middle Action Circle */}
-            <div className="md:col-span-3 flex flex-col items-center justify-center py-4 relative">
-              <AnimatePresence mode="wait">
-                {isScanning ? (
-                  <motion.div
-                    key="scanning"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="flex flex-col items-center text-center z-10"
-                  >
-                    <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin mb-4" />
-                    <div className="text-sm font-bold text-primary animate-pulse">{scanProgress}%</div>
-                    <div className="text-[11px] text-on-surface-variant mt-2 font-medium max-w-[150px] leading-tight h-8">
-                      {scanStepText}
-                    </div>
-                  </motion.div>
-                ) : isMatched && bestFoundItem ? (
-                  <motion.div
-                    key="match-success"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring', damping: 12 }}
-                    className="flex flex-col items-center text-center z-10"
-                  >
-                    <motion.div 
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="w-16 h-16 rounded-full bg-success/15 border border-success/30 flex items-center justify-center text-success mb-3 shadow-[0_0_20px_rgba(0,170,100,0.15)]"
-                    >
-                      <span className="material-symbols-outlined text-3xl font-bold">verified</span>
-                    </motion.div>
-                    
-                    <span className="text-[11px] font-bold tracking-widest text-success uppercase mb-1">Skor AI</span>
-                    <h3 className="font-headline-md text-headline-md text-success font-black leading-none mb-2">
-                      {matchRate}%
-                    </h3>
-                    
-                    <span className="text-xs bg-success-container text-on-success-container border border-success/20 px-3 py-1 rounded-full font-bold">
-                      Kecocokan Ditemukan
-                    </span>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="w-14 h-14 rounded-full bg-surface-container-high/70 border border-outline-variant/60 flex items-center justify-center text-outline mb-4">
-                      <span className="material-symbols-outlined text-2xl">insights</span>
-                    </div>
-                    <button
-                      onClick={startSimulation}
-                      className="bg-primary text-on-primary hover:bg-on-primary-fixed-variant transition-all font-label-md text-label-md px-5 py-2.5 rounded-xl cursor-pointer shadow-sm hover:shadow-md hover:scale-105 active:scale-95"
-                    >
-                      Jalankan AI Match
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Right Card: Matching Found Item */}
-            <div className="md:col-span-4 flex flex-col">
-              <div className="text-xs font-bold text-success uppercase tracking-wider mb-2 flex items-center gap-1.5 justify-center md:justify-start">
-                <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                Barang Temuan
-              </div>
-              <div className={`bg-surface-container-low border rounded-2xl p-5 transition-all duration-300 min-h-[240px] flex flex-col justify-between ${
-                isScanning ? 'border-primary/40 shadow-[0_0_20px_rgba(40,91,199,0.05)] scale-98' : 'border-outline-variant/60'
-              }`}>
-                {isMatched && bestFoundItem ? (
-                  <>
-                    <div>
-                      <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4">
-                        <span className="material-symbols-outlined text-2xl">{getIcon(bestFoundItem)}</span>
-                      </div>
-                      <h4 className="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1 truncate text-left">
-                        {bestFoundItem.title}
-                      </h4>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-2 text-left">
-                        <span className="material-symbols-outlined text-sm text-outline">person</span>
-                        Finder: {bestFoundItem.users?.full_name || 'Anonim'}
-                      </p>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-3 text-left">
-                        <span className="material-symbols-outlined text-sm text-outline">location_on</span>
-                        Lokasi: {bestFoundItem.location || 'Tidak diketahui'}
-                      </p>
-                    </div>
-                    <p className="font-body-sm text-body-sm text-outline leading-relaxed border-t border-outline-variant/30 pt-3 text-left line-clamp-3">
-                      "{bestFoundItem.description || 'Tidak ada deskripsi.'}"
-                    </p>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center flex-grow text-center text-outline/40 py-10">
-                    <span className="material-symbols-outlined text-[48px] mb-2">find_in_page</span>
-                    <p className="text-xs font-semibold">Menunggu analisis AI</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Dynamic Match Analysis Reasons */}
-          <AnimatePresence>
-            {isMatched && reasons.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.4 }}
-                className="mt-8 border-t border-outline-variant/50 pt-6"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="w-full max-w-md"
               >
-                <h4 className="font-label-md text-label-md text-primary font-bold mb-3 uppercase tracking-wider text-left">
-                  Analisis Kesesuaian Algoritma AI:
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {reasons.map((reason, i) => (
+                <div className="bg-surface border border-outline-variant/40 rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+                      <span className="text-xs font-bold text-primary uppercase tracking-wider">Memproses...</span>
+                    </div>
+                    <span className="text-sm font-black text-primary tabular-nums">{scanProgress}%</span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full h-2.5 bg-outline-variant/20 rounded-full overflow-hidden mb-3">
                     <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.15 }}
-                      className="bg-surface-container-low border border-outline-variant/40 rounded-xl p-3 flex gap-2 items-start text-left"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${scanProgress}%` }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-primary to-[#3b82f6] rounded-full relative"
                     >
-                      <span className="material-symbols-outlined text-success text-[18px] mt-0.5 select-none">check_circle</span>
-                      <span className="text-xs text-on-surface-variant font-medium leading-relaxed">
-                        {reason}
-                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
                     </motion.div>
-                  ))}
+                  </div>
+                  <p className="text-xs text-on-surface-variant font-medium text-center">{scanStepText}</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-
         </div>
+
+        {/* Step 3: Match Results */}
+        <AnimatePresence>
+          {isMatched && bestFoundItem && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 120 }}
+            >
+              <div className="flex items-center gap-2 mb-5 px-1">
+                <span className="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center text-success">
+                  <span className="material-symbols-outlined text-[18px]">verified</span>
+                </span>
+                <span className="font-label-md text-label-md text-on-surface font-bold">Hasil Analisis AI</span>
+              </div>
+
+              <div className="bg-surface border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+                
+                {/* Score Banner */}
+                <div className={`flex items-center justify-center gap-4 py-5 px-6 border-b ${getScoreBg(matchRate)}`}>
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                    className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${getScoreBg(matchRate)} ${getScoreColor(matchRate)}`}
+                  >
+                    <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      {matchRate >= 60 ? 'verified' : matchRate >= 30 ? 'help' : 'warning'}
+                    </span>
+                  </motion.div>
+                  <div className="text-left">
+                    <div className="flex items-baseline gap-2">
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', damping: 8, delay: 0.2 }}
+                        className={`text-4xl font-black tabular-nums ${getScoreColor(matchRate)}`}
+                      >
+                        {matchRate}%
+                      </motion.span>
+                      <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${getScoreBg(matchRate)} ${getScoreColor(matchRate)}`}>
+                        {getScoreLabel(matchRate)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-0.5">Skor kecocokan AI terhadap {activeFound.length} laporan temuan</p>
+                  </div>
+                </div>
+
+                {/* Two Column Comparison */}
+                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-outline-variant/30">
+                  
+                  {/* Lost Item Column */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="w-2 h-2 rounded-full bg-error" />
+                      <span className="text-[11px] font-bold text-error uppercase tracking-wider">Barang Hilang</span>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-error/8 border border-error/15 flex items-center justify-center text-error shrink-0">
+                        <span className="material-symbols-outlined text-2xl">{getIcon(activeLostItem)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-headline-sm text-headline-sm text-on-surface font-bold truncate">{activeLostItem?.title}</h4>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined text-[14px] text-outline">person</span>
+                          {activeLostItem?.users?.full_name || 'Anonim'}
+                        </p>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
+                          {activeLostItem?.location || '-'}
+                        </p>
+                        <p className="text-[11px] text-outline mt-2 line-clamp-2 leading-relaxed italic">
+                          "{activeLostItem?.description}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Found Item Column */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="w-2 h-2 rounded-full bg-success" />
+                      <span className="text-[11px] font-bold text-success uppercase tracking-wider">Barang Temuan Paling Cocok</span>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-success/8 border border-success/15 flex items-center justify-center text-success shrink-0">
+                        <span className="material-symbols-outlined text-2xl">{getIcon(bestFoundItem)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-headline-sm text-headline-sm text-on-surface font-bold truncate">{bestFoundItem.title}</h4>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                          <span className="material-symbols-outlined text-[14px] text-outline">person</span>
+                          {bestFoundItem.users?.full_name || 'Anonim'}
+                        </p>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
+                          {bestFoundItem.location || '-'}
+                        </p>
+                        <p className="text-[11px] text-outline mt-2 line-clamp-2 leading-relaxed italic">
+                          "{bestFoundItem.description}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reason Tags */}
+                <div className="px-6 pb-6 pt-2">
+                  <p className="text-[10px] font-bold text-outline uppercase tracking-widest mb-3">Alasan Kecocokan AI</p>
+                  <div className="flex flex-wrap gap-2">
+                    {reasons.map((r, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 + i * 0.1 }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-outline-variant/40 rounded-full"
+                      >
+                        <span className="material-symbols-outlined text-success text-[14px]">{r.icon}</span>
+                        <span className="text-[11px] text-on-surface-variant font-medium">{r.text}</span>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Reset */}
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => { setIsMatched(false); setBestFoundItem(null); setReasons([]); }}
+                  className="text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">refresh</span>
+                  Coba Lagi dengan Item Lain
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </section>
