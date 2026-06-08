@@ -11,56 +11,6 @@ import uirLogo from '../assets/uir.png';
 import umriLogo from '../assets/umri.jpg';
 import AiMatchSimulator from '../components/AiMatchSimulator';
 
-const mapBuildings = [
-  {
-    id: 'rektorat',
-    name: 'Gedung Rektorat',
-    icon: 'corporate_fare',
-    x: 360, y: 30, w: 180, h: 90,
-    pinX: 450, pinY: 75,
-    aliases: ['rektorat', 'rektor']
-  },
-  {
-    id: 'perpustakaan',
-    name: 'Perpustakaan Utama',
-    icon: 'local_library',
-    x: 80, y: 150, w: 180, h: 100,
-    pinX: 170, pinY: 200,
-    aliases: ['perpustakaan', 'perpus', 'library']
-  },
-  {
-    id: 'fst',
-    name: 'Fakultas Sains & Teknologi',
-    icon: 'biotech',
-    x: 640, y: 150, w: 180, h: 100,
-    pinX: 730, pinY: 200,
-    aliases: ['fst', 'sains', 'teknologi', 'lab']
-  },
-  {
-    id: 'parkir',
-    name: 'Area Parkir Utama',
-    icon: 'local_parking',
-    x: 80, y: 320, w: 180, h: 100,
-    pinX: 170, pinY: 370,
-    aliases: ['parkir', 'parkiran', 'kendaraan', 'tarbiyah']
-  },
-  {
-    id: 'masjid',
-    name: 'Masjid Al-Jamiah',
-    icon: 'mosque',
-    x: 370, y: 220, w: 160, h: 100,
-    pinX: 450, pinY: 270,
-    aliases: ['masjid', 'wudhu', 'musholla', 'mushola']
-  },
-  {
-    id: 'pkm',
-    name: 'Pusat Kegiatan Mahasiswa',
-    icon: 'groups',
-    x: 640, y: 320, w: 180, h: 100,
-    pinX: 730, pinY: 370,
-    aliases: ['pkm', 'kegiatan', 'mahasiswa']
-  }
-];
 
 const Home = () => {
   const [lostItems, setLostItems] = useState([]);
@@ -69,7 +19,7 @@ const Home = () => {
   const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [mapAllItems, setMapAllItems] = useState([]);
-  const [selectedMapBuilding, setSelectedMapBuilding] = useState('perpustakaan');
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('lost'); // 'lost' or 'found'
   const navigate = useNavigate();
@@ -151,21 +101,6 @@ const Home = () => {
     fetchDataAndStats();
   }, []);
 
-  const getFilteredMapItems = () => {
-    if (!selectedMapBuilding) return [];
-    const building = mapBuildings.find(b => b.id === selectedMapBuilding);
-    if (!building) return [];
-    
-    return mapAllItems.filter(item => {
-      const loc = (item.location || '').toLowerCase();
-      const title = (item.title || '').toLowerCase();
-      const desc = (item.description || '').toLowerCase();
-      
-      return building.aliases.some(alias => 
-        loc.includes(alias) || title.includes(alias) || desc.includes(alias)
-      );
-    });
-  };
 
   const tickerMessages = [
     "KTM atas nama 'Reza Amanda' berhasil diserahkan kembali ke pemiliknya di Perpustakaan",
@@ -855,191 +790,6 @@ const Home = () => {
           foundItems={mapAllItems.filter(i => i.status === 'found')} 
         />
 
-        {/* Interactive Campus Map Section */}
-        <section className="py-20 bg-surface border-b border-outline-variant/30 relative z-10">
-          <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
-            <div className="mb-16 max-w-[672px] mx-auto flex flex-col items-center text-center">
-              <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Pencarian Spasial</span>
-              <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">Peta Lokasi Kehilangan Kampus</h2>
-              <p className="text-on-surface-variant mt-3 font-body-md">
-                Klik salah satu ikon gedung/lokasi pada denah kampus di bawah untuk melihat laporan barang hilang dan temuan di area tersebut.
-              </p>
-              <div className="w-12 h-1 bg-primary rounded-full mt-4"></div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-              
-              {/* Map Column */}
-              <div className="lg:col-span-8 bg-surface-container border border-outline-variant/60 shadow-sm rounded-3xl p-4 md:p-6 flex flex-col items-center justify-center min-h-[380px] overflow-x-auto">
-                <div className="w-full min-w-[700px] max-w-[850px] aspect-[900/480] relative">
-                  <svg viewBox="0 0 900 480" className="w-full h-full text-on-surface">
-                    
-                    {/* Dashed Connecting Roads */}
-                    <path 
-                      d="M 170,200 L 450,200 L 450,75 M 450,200 L 730,200 M 170,200 L 170,370 L 450,370 L 450,270 M 730,200 L 730,370 L 450,370" 
-                      stroke="currentColor" 
-                      strokeWidth="8" 
-                      strokeDasharray="6 6" 
-                      className="text-outline/15 dark:text-outline-variant/10 fill-none" 
-                    />
-
-                    {/* Rendering Map Buildings */}
-                    {mapBuildings.map((building) => {
-                      const isActive = selectedMapBuilding === building.id;
-                      // Check if building has any matching items
-                      const buildingItems = mapAllItems.filter(item => {
-                        const loc = (item.location || '').toLowerCase();
-                        const title = (item.title || '').toLowerCase();
-                        const desc = (item.description || '').toLowerCase();
-                        return building.aliases.some(alias => 
-                          loc.includes(alias) || title.includes(alias) || desc.includes(alias)
-                        );
-                      });
-                      const hasItems = buildingItems.length > 0;
-                      const hasLost = buildingItems.some(i => i.status === 'lost');
-                      const hasFound = buildingItems.some(i => i.status === 'found');
-
-                      return (
-                        <g 
-                          key={building.id} 
-                          className="cursor-pointer group"
-                          onClick={() => setSelectedMapBuilding(building.id)}
-                        >
-                          {/* Building Outer Glow Shadow (Active) */}
-                          {isActive && (
-                            <rect
-                              x={building.x - 6}
-                              y={building.y - 6}
-                              width={building.w + 12}
-                              height={building.h + 12}
-                              rx="18"
-                              className="fill-primary/5 stroke-primary/30 stroke-1 blur-[3px]"
-                            />
-                          )}
-                          
-                          {/* Building Body */}
-                          <rect
-                            x={building.x}
-                            y={building.y}
-                            width={building.w}
-                            height={building.h}
-                            rx="12"
-                            className={`transition-all duration-300 ${
-                              isActive
-                                ? 'fill-primary-container/45 stroke-primary stroke-2'
-                                : 'fill-surface/90 stroke-outline-variant/60 group-hover:fill-surface-container-high/60 group-hover:stroke-primary/50'
-                            }`}
-                          />
-
-                          {/* Building Icon & Text */}
-                          <g transform={`translate(${building.x + building.w / 2}, ${building.y + building.h / 2 - 10})`} className="pointer-events-none">
-                            <text 
-                              className={`material-symbols-outlined text-[32px] select-none text-center ${
-                                isActive ? 'fill-primary text-primary' : 'text-outline/70 group-hover:text-primary/70'
-                              }`} 
-                              textAnchor="middle" 
-                              dominantBaseline="middle"
-                            >
-                              {building.icon}
-                            </text>
-                            <text
-                              y="32"
-                              textAnchor="middle"
-                              dominantBaseline="middle"
-                              className={`text-[11px] font-bold tracking-wide select-none ${
-                                isActive ? 'text-primary' : 'text-on-surface-variant'
-                              }`}
-                            >
-                              {building.name}
-                            </text>
-                          </g>
-
-                          {/* Pin Indicator */}
-                          {hasItems && (
-                            <g transform={`translate(${building.pinX}, ${building.pinY})`}>
-                              <circle 
-                                r="8" 
-                                className={`animate-ping ${
-                                  hasLost && hasFound ? 'fill-warning/40' : hasLost ? 'fill-error/40' : 'fill-success/40'
-                                }`} 
-                              />
-                              <circle 
-                                r="5" 
-                                className={`${
-                                  hasLost && hasFound ? 'fill-warning' : hasLost ? 'fill-error' : 'fill-success'
-                                }`} 
-                              />
-                            </g>
-                          )}
-                        </g>
-                      );
-                    })}
-
-                  </svg>
-                </div>
-              </div>
-
-              {/* Sidebar List Column */}
-              <div className="lg:col-span-4 bg-surface-container-low border border-outline-variant/60 shadow-sm rounded-3xl p-6 flex flex-col items-stretch max-h-[480px]">
-                <div className="border-b border-outline-variant/30 pb-4 mb-4">
-                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold text-left">
-                    {mapBuildings.find(b => b.id === selectedMapBuilding)?.name || 'Denah Kampus'}
-                  </h3>
-                  <p className="text-xs text-on-surface-variant text-left mt-1">
-                    Laporan di area ini
-                  </p>
-                </div>
-
-                <div className="flex-grow overflow-y-auto space-y-3 pr-2 scrollbar-none">
-                  {(() => {
-                    const items = getFilteredMapItems();
-                    if (items.length === 0) {
-                      return (
-                        <div className="flex flex-col items-center justify-center py-12 text-center text-on-surface-variant">
-                          <span className="material-symbols-outlined text-4xl mb-2 text-success/70">check_circle</span>
-                          <p className="font-semibold text-xs text-success">Area ini Aman</p>
-                          <p className="text-[11px] text-outline mt-1 leading-normal max-w-[180px]">
-                            Tidak ada laporan kehilangan/temuan aktif di area ini saat ini.
-                          </p>
-                        </div>
-                      );
-                    }
-                    return items.map(item => (
-                      <Link
-                        key={item.id}
-                        to={`/item-detail?id=${item.id}`}
-                        className="flex items-center gap-3 p-3 bg-surface hover:bg-surface-container-high border border-outline-variant/40 rounded-xl transition-all group/item cursor-pointer text-left"
-                      >
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-container flex-shrink-0 flex items-center justify-center border border-outline-variant/30">
-                          {item.image_url ? (
-                            <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="material-symbols-outlined text-outline/50 text-xl">inventory_2</span>
-                          )}
-                        </div>
-                        <div className="flex-grow min-w-0">
-                          <h4 className="text-xs font-bold text-on-surface truncate group-hover/item:text-primary transition-colors">
-                            {item.title}
-                          </h4>
-                          <p className="text-[10px] text-outline truncate flex items-center gap-1 mt-0.5">
-                            <span className="material-symbols-outlined text-[12px]">location_on</span>
-                            {item.location}
-                          </p>
-                        </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0 ${
-                          item.status === 'lost' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'
-                        }`}>
-                          {item.status === 'lost' ? 'Hilang' : 'Temuan'}
-                        </span>
-                      </Link>
-                    ));
-                  })()}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
 
         {/* Recent Lost Items */}
         <section className="py-20 bg-surface">
