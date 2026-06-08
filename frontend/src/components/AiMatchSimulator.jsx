@@ -83,17 +83,19 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
   const [matchRate, setMatchRate] = useState(0);
   const [reasons, setReasons] = useState([]);
   const scrollRef = useRef(null);
+  const initializedRef = useRef(false);
 
   const isReal = lostItems.length > 0;
   const activeLost = isReal ? lostItems : fallbackLostItems;
   const activeFound = isReal ? foundItems : fallbackFoundItems;
 
   useEffect(() => {
-    if (activeLost.length > 0) {
+    if (!initializedRef.current && activeLost.length > 0) {
       setSelectedLostId(activeLost[0].id);
       setActiveLostItem(activeLost[0]);
+      initializedRef.current = true;
     }
-  }, [lostItems, foundItems]);
+  }, [activeLost.length]);
 
   useEffect(() => {
     if (selectedLostId) {
