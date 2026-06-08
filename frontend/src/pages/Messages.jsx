@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
 import { apiClient } from '../services/apiClient';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
