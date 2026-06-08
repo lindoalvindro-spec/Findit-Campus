@@ -189,7 +189,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
           </div>
 
           <div className="relative">
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-3 scroll-smooth snap-x snap-mandatory scrollbar-none px-1">
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pt-3 pb-4 pr-4 scroll-smooth snap-x snap-mandatory scrollbar-none px-1 -mt-3">
               {activeLost.map((item) => {
                 const isActive = selectedLostId === item.id;
                 return (
