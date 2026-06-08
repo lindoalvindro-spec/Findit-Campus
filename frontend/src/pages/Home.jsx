@@ -397,7 +397,7 @@ const Home = () => {
                               <motion.div 
                                 animate={{ y: [0, 6, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                                className="absolute -bottom-6 -left-8 bg-primary text-on-primary rounded-2xl rounded-bl-none p-3.5 shadow-[0_10px_25px_rgba(0,40,142,0.15)] text-[12px] max-w-[210px] z-20 border border-primary-container text-left"
+                                className="absolute -bottom-12 -left-10 bg-primary text-on-primary rounded-2xl rounded-bl-none p-3.5 shadow-[0_10px_25px_rgba(0,40,142,0.15)] text-[11px] max-w-[220px] z-20 border border-primary-container text-left"
                               >
                                 <div className="font-bold text-[10px] opacity-75 mb-1 text-white/95">
                                   {activeItem.users?.full_name || 'Pengguna'} ({activeItem.status === 'lost' ? 'Owner' : 'Finder'})
