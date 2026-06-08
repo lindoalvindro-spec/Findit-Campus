@@ -207,6 +207,13 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
     }
   }, [selectedLostId, activeLost]);
 
+  // Reset horizontal scroll when changing pages or filters
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = 0;
+    }
+  }, [currentPage, selectedCategory, searchQuery]);
+
   const handleNextPage = () => {
     if (currentPage < totalPages - 1) {
       setSlideDirection(1);
@@ -391,7 +398,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             )}
           </div>
 
-          <div className="relative min-h-[148px] overflow-hidden">
+          <div ref={scrollRef} className="relative min-h-[160px] overflow-x-auto scrollbar-none snap-x snap-mandatory pb-1">
             <AnimatePresence mode="wait" custom={slideDirection}>
               <motion.div
                 key={currentPage + '_' + selectedCategory + '_' + searchQuery}
