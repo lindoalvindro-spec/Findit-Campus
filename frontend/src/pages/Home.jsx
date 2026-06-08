@@ -785,10 +785,12 @@ const Home = () => {
         </section>
 
         {/* AI Match Simulator */}
-        <AiMatchSimulator 
-          lostItems={mapAllItems.filter(i => i.status === 'lost')} 
-          foundItems={mapAllItems.filter(i => i.status === 'found')} 
-        />
+        {!loading && (
+          <AiMatchSimulator 
+            lostItems={mapAllItems.filter(i => i.status === 'lost')} 
+            foundItems={mapAllItems.filter(i => i.status === 'found')} 
+          />
+        )}
 
 
         {/* Recent Lost Items */}
