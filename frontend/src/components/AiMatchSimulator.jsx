@@ -159,7 +159,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
           >
             <span className="material-symbols-outlined text-primary text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
             <span className="text-xs font-bold text-primary tracking-wider uppercase">
-              {isReal ? 'AI Matchmaker — Data Riil' : 'AI Matchmaker — Demo'}
+              Intelligent Matching System
             </span>
             <span className={`w-2 h-2 rounded-full ${isReal ? 'bg-success animate-pulse' : 'bg-outline-variant'}`} />
           </motion.div>
@@ -171,7 +171,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             transition={{ delay: 0.1 }}
             className="font-headline-lg text-headline-lg text-on-surface font-bold"
           >
-            Pencocokan Otomatis Berbasis AI
+            Sistem Pencocokan Cerdas
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 15 }}
@@ -180,7 +180,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             transition={{ delay: 0.2 }}
             className="text-on-surface-variant max-w-[560px] mx-auto mt-3 font-body-md leading-relaxed"
           >
-            Pilih laporan kehilangan, lalu biarkan AI mencari barang temuan paling cocok dari seluruh database secara real-time.
+            Algoritma AI menganalisis setiap laporan kehilangan dan mencocokkannya dengan barang temuan berdasarkan kategori, lokasi, dan deskripsi secara otomatis.
           </motion.p>
         </div>
 
