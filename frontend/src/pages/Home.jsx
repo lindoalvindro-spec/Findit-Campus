@@ -127,7 +127,7 @@ const Home = () => {
       <Navbar />
       
       {/* Live Ticker Bar */}
-      <div className="w-full bg-surface-container-high/65 border-b border-outline-variant/30 py-2.5 overflow-hidden relative z-20 flex items-center">
+      <div className="w-full bg-surface-container-high/65 border-b border-outline-variant/30 dark:border-outline/30 py-2.5 overflow-hidden relative z-20 flex items-center">
         <style>{`
           @keyframes marquee {
             0% { transform: translateX(0%); }
@@ -140,12 +140,12 @@ const Home = () => {
             animation-play-state: paused;
           }
         `}</style>
-        <div className="px-4 md:px-6 shrink-0 bg-surface-container-high z-10 flex items-center gap-2 border-r border-outline-variant/50 mr-4 font-bold text-[10px] tracking-wider uppercase text-on-surface">
+        <div className="px-4 md:px-6 shrink-0 bg-surface-container-high z-10 flex items-center gap-2 border-r border-outline-variant/50 mr-4 font-bold text-[10px] tracking-wider uppercase text-on-surface dark:text-surface">
           <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse" />
           <span>Live Ticker</span>
         </div>
         <div className="flex w-full overflow-hidden">
-          <div className="flex gap-12 whitespace-nowrap animate-marquee-slow text-xs text-on-surface-variant font-medium">
+          <div className="flex gap-12 whitespace-nowrap animate-marquee-slow text-xs text-on-surface-variant dark:text-surface-variant font-medium">
             {doubledMessages.map((msg, i) => (
               <span key={i} className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer">
                 <span className="text-primary">•</span> {msg}
@@ -172,7 +172,7 @@ const Home = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="font-headline-xl text-headline-xl text-on-surface mb-6 max-w-[672px] leading-tight font-bold"
+                  className="font-headline-xl text-headline-xl text-on-surface dark:text-surface mb-6 max-w-[672px] leading-tight font-bold"
                 >
                   Temukan Barangmu, <br className="hidden sm:inline" />
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-surface-tint to-[#2563eb]">
@@ -201,7 +201,7 @@ const Home = () => {
                     className={`px-5 py-2 rounded-full font-label-md text-label-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                       searchType === 'lost' 
                         ? 'bg-primary text-on-primary shadow-sm' 
-                        : 'text-on-surface-variant hover:bg-surface-container-high/60'
+                        : 'text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high/60'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">search</span>
@@ -213,7 +213,7 @@ const Home = () => {
                     className={`px-5 py-2 rounded-full font-label-md text-label-md font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                       searchType === 'found' 
                         ? 'bg-secondary text-on-secondary shadow-sm' 
-                        : 'text-on-surface-variant hover:bg-surface-container-high/60'
+                        : 'text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high/60'
                     }`}
                   >
                     <span className="material-symbols-outlined text-[18px]">check_circle</span>
@@ -239,7 +239,7 @@ const Home = () => {
                     search
                   </span>
                   <input 
-                    className="flex-grow bg-transparent border-none focus:ring-0 font-body-md text-body-md px-3 text-on-surface placeholder:text-outline focus:outline-none" 
+                    className="flex-grow bg-transparent border-none focus:ring-0 font-body-md text-body-md px-3 text-on-surface dark:text-surface placeholder:text-outline focus:outline-none" 
                     placeholder={searchType === 'lost' ? "Cari barang hilang..." : "Cari barang temuan..."} 
                     type="text" 
                     value={searchQuery}
@@ -276,7 +276,7 @@ const Home = () => {
                         const targetPath = searchType === 'lost' ? '/lost-items' : '/found-items';
                         navigate(`${targetPath}?q=${encodeURIComponent(tag)}`);
                       }}
-                      className={`px-3 py-1 rounded-full border border-outline-variant/60 bg-surface/40 transition-all text-xs font-medium text-on-surface-variant cursor-pointer ${
+                      className={`px-3 py-1 rounded-full border border-outline-variant/60 dark:border-outline/60 bg-surface/40 transition-all text-xs font-medium text-on-surface-variant dark:text-surface-variant cursor-pointer ${
                         searchType === 'lost' 
                           ? 'hover:border-primary hover:text-primary' 
                           : 'hover:border-secondary hover:text-secondary'
@@ -298,8 +298,8 @@ const Home = () => {
                 {loading ? (
                   /* Skeleton Card Mockup during Loading */
                   <div className="relative w-full max-w-[340px]">
-                    <div className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-full">
-                      <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <div className="block bg-surface/80 dark:bg-inverse-surface/90 border border-outline-variant/60 dark:border-outline/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-full">
+                      <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 dark:border-outline/30 pb-3">
                         <div className="flex items-center gap-2">
                           <span className="w-3 h-3 rounded-full bg-outline-variant/35 animate-pulse"></span>
                           <span className="w-3 h-3 rounded-full bg-outline-variant/35 animate-pulse"></span>
@@ -341,9 +341,9 @@ const Home = () => {
                               {/* Base App Card Mockup */}
                               <Link 
                                 to={`/item-detail?id=${activeItem.id}`} 
-                                className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 hover:border-primary/50 transition-all group/card cursor-pointer"
+                                className="block bg-surface/80 dark:bg-inverse-surface/90 border border-outline-variant/60 dark:border-outline/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 hover:border-primary/50 transition-all group/card cursor-pointer"
                               >
-                                <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                                <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 dark:border-outline/30 pb-3">
                                   <div className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-full bg-error" />
                                     <div className="w-2.5 h-2.5 rounded-full bg-warning" />
@@ -352,7 +352,7 @@ const Home = () => {
                                   <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
                                 </div>
 
-                                <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4 flex items-center justify-center border border-outline-variant/10">
+                                <div className="rounded-2xl overflow-hidden h-40 bg-surface-container dark:bg-inverse-surface/50 relative mb-4 flex items-center justify-center border border-outline-variant/10">
                                   <div className={`absolute top-3 right-3 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm ${
                                     activeItem.status === 'lost' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'
                                   }`}>
@@ -369,10 +369,10 @@ const Home = () => {
                                   )}
                                 </div>
 
-                                <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1 truncate group-hover/card:text-primary transition-colors text-left">
+                                <h4 className="font-label-md text-label-md text-on-surface dark:text-surface font-semibold mb-1 truncate group-hover/card:text-primary transition-colors text-left">
                                   {activeItem.title}
                                 </h4>
-                                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1 truncate text-left">
+                                <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mb-1 truncate text-left">
                                   <span className="material-symbols-outlined text-sm text-outline">location_on</span>
                                   {activeItem.location || 'Area Kampus'}
                                 </p>
@@ -429,8 +429,8 @@ const Home = () => {
                         })()
                       ) : (
                         // Default mockup in case database is empty
-                        <div className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-[340px]">
-                          <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                        <div className="block bg-surface/80 dark:bg-inverse-surface/90 border border-outline-variant/60 dark:border-outline/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-[340px]">
+                          <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 dark:border-outline/30 pb-3">
                             <div className="flex items-center gap-2">
                               <span className="w-3 h-3 rounded-full bg-error"></span>
                               <span className="w-3 h-3 rounded-full bg-warning"></span>
@@ -438,13 +438,13 @@ const Home = () => {
                             </div>
                             <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
                           </div>
-                          <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4 flex items-center justify-center">
+                          <div className="rounded-2xl overflow-hidden h-40 bg-surface-container dark:bg-inverse-surface/50 relative mb-4 flex items-center justify-center">
                             <span className="material-symbols-outlined text-[54px] text-primary/30">inventory_2</span>
                           </div>
-                          <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1">
+                          <h4 className="font-label-md text-label-md text-on-surface dark:text-surface font-semibold mb-1">
                             Belum Ada Laporan
                           </h4>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1">
+                          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mb-1">
                             <span className="material-symbols-outlined text-sm text-outline">location_on</span>
                             -
                           </p>
@@ -519,7 +519,7 @@ const Home = () => {
         </section>
 
         {/* Quick Stats Section */}
-        <section className="py-16 bg-surface relative z-10 border-t border-outline-variant/30">
+        <section className="py-16 bg-surface dark:bg-on-background relative z-10 border-t border-outline-variant/30 dark:border-outline/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <motion.div 
               initial="hidden"
@@ -536,7 +536,7 @@ const Home = () => {
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
+                className="bg-surface-container-low dark:bg-inverse-surface rounded-2xl p-6 text-center border border-outline-variant/60 dark:border-outline/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <span className="material-symbols-outlined text-2xl">analytics</span>
@@ -554,7 +554,7 @@ const Home = () => {
                     <span>{stats.total.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Total Laporan</div>
+                <div className="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant font-medium">Total Laporan</div>
               </motion.div>
 
               {/* Stat 2 */}
@@ -562,7 +562,7 @@ const Home = () => {
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
+                className="bg-surface-container-low dark:bg-inverse-surface rounded-2xl p-6 text-center border border-outline-variant/60 dark:border-outline/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
                   <span className="material-symbols-outlined text-2xl">check_circle</span>
@@ -580,7 +580,7 @@ const Home = () => {
                     <span>{stats.returned.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Barang Kembali</div>
+                <div className="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant font-medium">Barang Kembali</div>
               </motion.div>
 
               {/* Stat 3 */}
@@ -588,7 +588,7 @@ const Home = () => {
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
+                className="bg-surface-container-low dark:bg-inverse-surface rounded-2xl p-6 text-center border border-outline-variant/60 dark:border-outline/60 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
                   <span className="material-symbols-outlined text-2xl">search</span>
@@ -606,7 +606,7 @@ const Home = () => {
                     <span>{stats.lost.toLocaleString('id-ID')}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Sedang Dicari</div>
+                <div className="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant font-medium">Sedang Dicari</div>
               </motion.div>
 
               {/* Stat 4 */}
@@ -614,7 +614,7 @@ const Home = () => {
                 variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -6, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="bg-surface-container-low rounded-2xl p-6 text-center border border-outline-variant/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
+                className="bg-surface-container-low dark:bg-inverse-surface rounded-2xl p-6 text-center border border-outline-variant/60 dark:border-outline/60 shadow-sm hover:shadow-lg hover:border-secondary/30 transition-all flex flex-col items-center gap-3 group cursor-pointer"
               >
                 <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
                   <span className="material-symbols-outlined text-2xl">verified_user</span>
@@ -632,18 +632,18 @@ const Home = () => {
                     <span>{`${stats.successRate}%`}</span>
                   )}
                 </motion.div>
-                <div className="font-label-md text-label-md text-on-surface-variant font-medium">Tingkat Sukses</div>
+                <div className="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant font-medium">Tingkat Sukses</div>
               </motion.div>
             </motion.div>
           </div>
         </section>
 
         {/* Search by Campus */}
-        <section className="py-16 bg-surface-container-low border-t border-b border-outline-variant/30">
+        <section className="py-16 bg-surface-container-low dark:bg-inverse-surface border-t border-b border-outline-variant/30 dark:border-outline/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <div className="mb-12 text-center">
               <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Jelajahi Kampus</span>
-              <h2 className="font-headline-lg text-headline-lg text-on-surface font-bold">Cari Berdasarkan Kampus</h2>
+              <h2 className="font-headline-lg text-headline-lg text-on-surface dark:text-surface font-bold">Cari Berdasarkan Kampus</h2>
               <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-4"></div>
             </div>
             
@@ -654,7 +654,7 @@ const Home = () => {
                   whileHover={{ y: -8, scale: 1.03 }}
                   transition={{ type: "spring", stiffness: 300 }}
                   onClick={() => navigate(`/lost-items?campus=${encodeURIComponent(campus.name)}`)}
-                  className="bg-surface rounded-2xl border border-outline-variant/60 p-6 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl hover:border-primary/30 transition-all group"
+                  className="bg-surface dark:bg-on-background rounded-2xl border border-outline-variant/60 dark:border-outline/60 p-6 flex flex-col items-center justify-center text-center cursor-pointer shadow-sm hover:shadow-xl hover:border-primary/30 transition-all group"
                 >
                   <div className="w-24 h-24 flex items-center justify-center mb-4 p-2 rounded-2xl bg-surface-container-high/50 group-hover:bg-primary/5 transition-all">
                     {campus.logo ? (
@@ -665,7 +665,7 @@ const Home = () => {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="font-label-md text-label-md text-on-surface dark:text-surface font-semibold group-hover:text-primary transition-colors line-clamp-2">
                     {campus.displayName}
                   </h3>
                 </motion.div>
@@ -675,7 +675,7 @@ const Home = () => {
         </section>
 
         {/* How it Works */}
-        <section className="py-20 bg-surface-container-lowest">
+        <section className="py-20 bg-surface-container-lowest dark:bg-on-background">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <div className="mb-16 max-w-[672px] mx-auto flex flex-col items-center text-center">
               <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-2">Alur Sistem</span>
@@ -683,7 +683,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="font-headline-lg text-headline-lg text-on-surface font-bold"
+                className="font-headline-lg text-headline-lg text-on-surface dark:text-surface font-bold"
               >
                 Cara Kerja FindIt Campus
               </motion.h2>
@@ -701,7 +701,7 @@ const Home = () => {
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -10 }}
-                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 dark:border-outline/60 bg-surface-container-low dark:bg-inverse-surface hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
                 <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,40,142,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   01
@@ -719,8 +719,8 @@ const Home = () => {
                     edit_document
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Lapor & Publikasikan</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Lapor & Publikasikan</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant leading-relaxed">
                   Unggah detail barang hilang atau temuan lengkap dengan foto dan lokasi spesifik di kampus secara cepat.
                 </p>
               </motion.div>
@@ -729,7 +729,7 @@ const Home = () => {
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -10 }}
-                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-secondary/30 hover:bg-secondary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 dark:border-outline/60 bg-surface-container-low dark:bg-inverse-surface hover:border-secondary/30 hover:bg-secondary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
                 <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-secondary group-hover:drop-shadow-[0_0_12px_rgba(0,108,74,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   02
@@ -747,8 +747,8 @@ const Home = () => {
                     fact_check
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-secondary transition-colors duration-300 font-semibold">Pencocokan & Moderasi</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface mb-3 group-hover:text-secondary transition-colors duration-300 font-semibold">Pencocokan & Moderasi</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant leading-relaxed">
                   Sistem otomatis mencocokkan data barang serta memoderasi konten gambar (AI NSFW) dan kata-kata kasar untuk keamanan.
                 </p>
               </motion.div>
@@ -757,7 +757,7 @@ const Home = () => {
               <motion.div 
                 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }} 
                 whileHover={{ y: -10 }}
-                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="relative flex flex-col items-start text-left p-8 rounded-3xl border border-outline-variant/60 dark:border-outline/60 bg-surface-container-low dark:bg-inverse-surface hover:border-primary/30 hover:bg-primary/5 hover:shadow-xl transition-all duration-300 group cursor-pointer"
               >
                 <div className="text-headline-lg font-bold text-outline/25 dark:text-outline-variant/15 group-hover:text-primary group-hover:drop-shadow-[0_0_12px_rgba(0,40,142,0.8)] group-hover:scale-110 select-none absolute top-6 right-8 transition-all duration-300">
                   03
@@ -775,8 +775,8 @@ const Home = () => {
                     handshake
                   </motion.span>
                 </motion.div>
-                <h3 className="font-headline-sm text-headline-sm text-on-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Hubungi & Kembalikan</h3>
-                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface mb-3 group-hover:text-primary transition-colors duration-300 font-semibold">Hubungi & Kembalikan</h3>
+                <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant leading-relaxed">
                   Komunikasi langsung secara aman dengan fitur chat realtime dan lakukan serah terima barang di area kampus.
                 </p>
               </motion.div>
@@ -794,7 +794,7 @@ const Home = () => {
 
 
         {/* Recent Lost Items */}
-        <section className="py-20 bg-surface">
+        <section className="py-20 bg-surface dark:bg-on-background">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <div className="bg-surface-container-low/60 border border-outline-variant/50 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
               {/* Subtle background blob */}
@@ -803,8 +803,8 @@ const Home = () => {
               <div className="flex justify-between items-end mb-10 relative z-10">
                 <div>
                   <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-1 block">Mari Membantu</span>
-                  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Hilang Terbaru</h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Bantu teman menemukan barang mereka di lingkungan kampus.</p>
+                  <h2 className="font-headline-md text-headline-md text-on-surface dark:text-surface font-bold">Barang Hilang Terbaru</h2>
+                  <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant mt-2">Bantu teman menemukan barang mereka di lingkungan kampus.</p>
                 </div>
                 <Link className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/lost-items">
                   Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -827,7 +827,7 @@ const Home = () => {
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="col-span-full py-16 text-center text-on-surface-variant bg-surface-container rounded-2xl border border-outline-variant/60 shadow-sm"
+                    className="col-span-full py-16 text-center text-on-surface-variant dark:text-surface-variant bg-surface-container dark:bg-inverse-surface/50 rounded-2xl border border-outline-variant/60 dark:border-outline/60 shadow-sm"
                   >
                     <motion.span 
                       animate={{ rotate: [0, -10, 10, 0] }}
@@ -836,7 +836,7 @@ const Home = () => {
                     >
                       search_off
                     </motion.span>
-                    <p className="font-medium text-on-surface-variant">Belum ada laporan barang hilang terbaru.</p>
+                    <p className="font-medium text-on-surface-variant dark:text-surface-variant">Belum ada laporan barang hilang terbaru.</p>
                   </motion.div>
                 ) : (
                   lostItems.map((item) => (
@@ -846,8 +846,8 @@ const Home = () => {
                       whileHover={{ y: -8 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
-                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full group">
-                        <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
+                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest dark:bg-on-background rounded-2xl border border-outline-variant/60 dark:border-outline/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-300 flex flex-col h-full group">
+                        <div className="h-48 bg-surface-container dark:bg-inverse-surface/50 flex items-center justify-center relative overflow-hidden">
                           {item.image_url ? (
                             <motion.img 
                               src={item.image_url} 
@@ -867,14 +867,14 @@ const Home = () => {
                             Hilang
                           </div>
                           {item.campus && (
-                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
+                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface dark:text-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
                               {item.campus}
                             </div>
                           )}
                         </div>
                         <div className="p-5 flex flex-col flex-grow">
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 truncate group-hover:text-primary transition-colors font-semibold">{item.title}</h3>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center gap-1.5">
+                          <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface mb-2 truncate group-hover:text-primary transition-colors font-semibold">{item.title}</h3>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant mb-4 flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[16px] text-outline">location_on</span> 
                             <span className="truncate">{item.location || 'Tidak diketahui'}</span>
                           </p>
@@ -895,7 +895,7 @@ const Home = () => {
         </section>
 
         {/* Recent Found Items */}
-        <section className="py-20 bg-surface-container-lowest border-t border-outline-variant/30">
+        <section className="py-20 bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant/30 dark:border-outline/30">
           <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
             <div className="bg-surface-container-low/60 border border-outline-variant/50 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative overflow-hidden">
               {/* Subtle background blob */}
@@ -904,8 +904,8 @@ const Home = () => {
               <div className="flex justify-between items-end mb-10 relative z-10">
                 <div>
                   <span className="font-label-md text-label-md text-secondary tracking-widest uppercase mb-1 block">Barang Temuan</span>
-                  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Temuan Terbaru</h2>
-                  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Cek daftar berikut jika Anda merasa kehilangan barang berharga Anda.</p>
+                  <h2 className="font-headline-md text-headline-md text-on-surface dark:text-surface font-bold">Barang Temuan Terbaru</h2>
+                  <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant mt-2">Cek daftar berikut jika Anda merasa kehilangan barang berharga Anda.</p>
                 </div>
                 <Link className="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/found-items">
                   Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -928,7 +928,7 @@ const Home = () => {
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="col-span-full py-16 text-center text-on-surface-variant bg-surface-container rounded-2xl border border-outline-variant/60 shadow-sm"
+                    className="col-span-full py-16 text-center text-on-surface-variant dark:text-surface-variant bg-surface-container dark:bg-inverse-surface/50 rounded-2xl border border-outline-variant/60 dark:border-outline/60 shadow-sm"
                   >
                     <motion.span 
                       animate={{ rotate: [0, 10, -10, 0] }}
@@ -937,7 +937,7 @@ const Home = () => {
                     >
                       search_off
                     </motion.span>
-                    <p className="font-medium text-on-surface-variant">Belum ada laporan barang temuan terbaru.</p>
+                    <p className="font-medium text-on-surface-variant dark:text-surface-variant">Belum ada laporan barang temuan terbaru.</p>
                   </motion.div>
                 ) : (
                   foundItems.map((item) => (
@@ -947,8 +947,8 @@ const Home = () => {
                       whileHover={{ y: -8 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     >
-                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest rounded-2xl border border-outline-variant/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-secondary/20 transition-all duration-300 flex flex-col h-full group">
-                        <div className="h-48 bg-surface-container flex items-center justify-center relative overflow-hidden">
+                      <Link to={`/item-detail?id=${item.id}`} className="block bg-surface-container-lowest dark:bg-on-background rounded-2xl border border-outline-variant/60 dark:border-outline/60 overflow-hidden shadow-sm hover:shadow-xl hover:border-secondary/20 transition-all duration-300 flex flex-col h-full group">
+                        <div className="h-48 bg-surface-container dark:bg-inverse-surface/50 flex items-center justify-center relative overflow-hidden">
                           {item.image_url ? (
                             <motion.img 
                               src={item.image_url} 
@@ -968,14 +968,14 @@ const Home = () => {
                             Ditemukan
                           </div>
                           {item.campus && (
-                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
+                            <div className="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm text-on-surface dark:text-surface px-2.5 py-1 rounded-lg font-label-sm text-[11px] font-medium z-10 border border-outline-variant/40 shadow-sm">
                               {item.campus}
                             </div>
                           )}
                         </div>
                         <div className="p-5 flex flex-col flex-grow">
-                          <h3 className="font-headline-sm text-headline-sm text-on-surface mb-2 truncate group-hover:text-secondary transition-colors font-semibold">{item.title}</h3>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant mb-4 flex items-center gap-1.5">
+                          <h3 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface mb-2 truncate group-hover:text-secondary transition-colors font-semibold">{item.title}</h3>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant mb-4 flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-[16px] text-outline">location_on</span> 
                             <span className="truncate">{item.location || 'Tidak diketahui'}</span>
                           </p>
@@ -1004,7 +1004,7 @@ const Home = () => {
               Apakah Anda kehilangan barang berharga? Atau menemukan barang milik mahasiswa lain? Laporkan sekarang untuk mengembalikannya ke pemilik sah.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to="/create-report?type=lost" className="px-8 py-3.5 bg-surface text-primary font-label-md text-label-md rounded-full hover:bg-surface-container-high transition-all shadow-md font-semibold text-center">
+              <Link to="/create-report?type=lost" className="px-8 py-3.5 bg-surface dark:bg-on-background text-primary font-label-md text-label-md rounded-full hover:bg-surface-container-high transition-all shadow-md font-semibold text-center">
                 Laporkan Kehilangan
               </Link>
               <Link to="/create-report?type=found" className="px-8 py-3.5 bg-transparent border-2 border-surface text-on-primary font-label-md text-label-md rounded-full hover:bg-surface/10 transition-all font-semibold text-center">

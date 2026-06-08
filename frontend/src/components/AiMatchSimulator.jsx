@@ -292,7 +292,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="font-headline-lg text-headline-lg text-on-surface font-bold"
+            className="font-headline-lg text-headline-lg text-on-surface dark:text-surface font-bold"
           >
             Sistem Pencocokan Cerdas
           </motion.h2>
@@ -301,14 +301,14 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-on-surface-variant max-w-[560px] mx-auto mt-3 font-body-md leading-relaxed"
+            className="text-on-surface-variant dark:text-surface-variant max-w-[560px] mx-auto mt-3 font-body-md leading-relaxed"
           >
             Algoritma AI menganalisis setiap laporan kehilangan dan mencocokkannya dengan barang temuan berdasarkan kategori, lokasi, dan deskripsi secara otomatis.
           </motion.p>
         </div>
 
         {/* Search and Category Filter Container */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-3xl bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md">
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-3xl bg-surface-container-low/60 border border-outline-variant/30 dark:border-outline/30 backdrop-blur-md">
           {/* Search Input */}
           <div className="relative w-full md:flex-1 md:max-w-[500px]">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-xl">search</span>
@@ -318,13 +318,13 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari laporan kehilangan..."
               disabled={isScanning}
-              className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-outline-variant/50 bg-surface text-on-surface text-body-large focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200 shadow-sm"
+              className="w-full pl-12 pr-10 py-3.5 rounded-2xl border border-outline-variant/50 bg-surface dark:bg-on-background text-on-surface dark:text-surface text-body-large focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-200 shadow-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 disabled={isScanning}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface dark:text-surface transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
@@ -343,7 +343,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                   className={`snap-start shrink-0 px-4 py-2 rounded-2xl border text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1.5 disabled:opacity-60 relative overflow-hidden ${
                     isCatActive
                       ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-outline-variant/30 bg-surface/50 text-on-surface-variant hover:border-outline-variant hover:text-on-surface'
+                      : 'border-outline-variant/30 dark:border-outline/30 bg-surface/50 text-on-surface-variant dark:text-surface-variant hover:border-outline-variant hover:text-on-surface'
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">{getCategoryIcon(cat)}</span>
@@ -368,8 +368,8 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
               <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-[18px]">touch_app</span>
               </span>
-              <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 1:</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Pilih laporan kehilangan</span>
+              <span className="font-label-md text-label-md text-on-surface dark:text-surface font-bold">Langkah 1:</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant">Pilih laporan kehilangan</span>
             </div>
 
             {/* Carousel Navigation Arrows */}
@@ -381,7 +381,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 <button
                   onClick={handlePrevPage}
                   disabled={currentPage === 0 || isScanning}
-                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface flex items-center justify-center text-outline hover:text-on-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface dark:bg-on-background flex items-center justify-center text-outline hover:text-on-surface dark:text-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
                   title="Halaman Sebelumnya"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_left</span>
@@ -389,7 +389,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages - 1 || isScanning}
-                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface flex items-center justify-center text-outline hover:text-on-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
+                  className="w-8 h-8 rounded-full border border-outline-variant/40 bg-surface dark:bg-on-background flex items-center justify-center text-outline hover:text-on-surface dark:text-surface hover:border-outline disabled:opacity-30 disabled:hover:border-outline-variant/40 disabled:hover:text-outline transition-all cursor-pointer"
                   title="Halaman Berikutnya"
                 >
                   <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -426,7 +426,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         className={`snap-start shrink-0 w-[200px] p-4 rounded-2xl border-2 text-left transition-all duration-200 cursor-pointer group relative overflow-hidden disabled:opacity-60 ${
                           isActive
                             ? 'border-primary bg-primary/5 shadow-[0_4px_20px_rgba(0,40,142,0.12)]'
-                            : 'border-outline-variant/40 bg-surface hover:border-primary/40 hover:shadow-md'
+                            : 'border-outline-variant/40 bg-surface dark:bg-on-background hover:border-primary/40 hover:shadow-md'
                         }`}
                       >
                         {/* Active check indicator */}
@@ -444,11 +444,11 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                           <span className="material-symbols-outlined text-xl">{getIcon(item)}</span>
                         </div>
                         <h4 className={`text-sm font-bold mb-1 truncate transition-colors ${
-                          isActive ? 'text-primary' : 'text-on-surface group-hover:text-primary'
+                          isActive ? 'text-primary' : 'text-on-surface dark:text-surface group-hover:text-primary'
                         }`}>
                           {item.title}
                         </h4>
-                        <p className="text-[11px] text-on-surface-variant truncate flex items-center gap-1">
+                        <p className="text-[11px] text-on-surface-variant dark:text-surface-variant truncate flex items-center gap-1">
                           <span className="material-symbols-outlined text-[12px]">person</span>
                           {item.users?.full_name || 'Anonim'}
                         </p>
@@ -462,7 +462,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 ) : (
                   <div className="flex-1 py-8 flex flex-col items-center justify-center text-center">
                     <span className="material-symbols-outlined text-outline text-3xl mb-2">find_in_page</span>
-                    <p className="text-on-surface-variant text-sm font-bold">Tidak ada laporan ditemukan</p>
+                    <p className="text-on-surface-variant dark:text-surface-variant text-sm font-bold">Tidak ada laporan ditemukan</p>
                     <p className="text-outline text-xs mt-1">Coba sesuaikan kata kunci atau kategori pencarian Anda.</p>
                   </div>
                 )}
@@ -501,8 +501,8 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             <span className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
               <span className="material-symbols-outlined text-[18px]">bolt</span>
             </span>
-            <span className="font-label-md text-label-md text-on-surface font-bold">Langkah 2:</span>
-            <span className="font-body-sm text-body-sm text-on-surface-variant">Jalankan pencocokan AI</span>
+            <span className="font-label-md text-label-md text-on-surface dark:text-surface font-bold">Langkah 2:</span>
+            <span className="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant">Jalankan pencocokan AI</span>
           </div>
 
           {!isScanning && !isMatched && (
@@ -527,7 +527,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 exit={{ opacity: 0, y: -10, scale: 0.97 }}
                 className="w-full max-w-2xl mx-auto"
               >
-                <div className="bg-surface border border-primary/20 rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,40,142,0.08)] relative overflow-hidden">
+                <div className="bg-surface dark:bg-on-background border border-primary/20 rounded-3xl p-8 shadow-[0_8px_40px_rgba(0,40,142,0.08)] relative overflow-hidden">
                   {/* Animated scan line */}
                   <motion.div
                     animate={{ x: ['-100%', '200%'] }}
@@ -542,8 +542,8 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         <div className="w-5 h-5 rounded-full border-[2.5px] border-primary/25 border-t-primary animate-spin" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-on-surface">Memproses Pencocokan AI</p>
-                        <p className="text-xs text-on-surface-variant mt-0.5">{scanStepText}</p>
+                        <p className="text-sm font-bold text-on-surface dark:text-surface">Memproses Pencocokan AI</p>
+                        <p className="text-xs text-on-surface-variant dark:text-surface-variant mt-0.5">{scanStepText}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 bg-primary/8 px-3.5 py-1.5 rounded-xl">
@@ -596,19 +596,19 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 <span className="w-7 h-7 rounded-lg bg-outline-variant/20 flex items-center justify-center text-outline">
                   <span className="material-symbols-outlined text-[18px]">search_off</span>
                 </span>
-                <span className="font-label-md text-label-md text-on-surface font-bold">Hasil Analisis AI</span>
+                <span className="font-label-md text-label-md text-on-surface dark:text-surface font-bold">Hasil Analisis AI</span>
               </div>
 
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+              <div className="bg-surface dark:bg-on-background border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
                 {/* Top banner */}
-                <div className="bg-surface-container-low/60 border-b border-outline-variant/30 px-8 py-5">
+                <div className="bg-surface-container-low/60 border-b border-outline-variant/30 dark:border-outline/30 px-8 py-5">
                   <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-2xl bg-outline-variant/15 border border-outline-variant/20 flex items-center justify-center shrink-0">
                       <span className="material-symbols-outlined text-3xl text-outline-variant">search_off</span>
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-lg font-bold text-on-surface mb-1">Tidak Ditemukan Kecocokan</h3>
-                      <p className="text-sm text-on-surface-variant leading-relaxed">
+                      <h3 className="text-lg font-bold text-on-surface dark:text-surface mb-1">Tidak Ditemukan Kecocokan</h3>
+                      <p className="text-sm text-on-surface-variant dark:text-surface-variant leading-relaxed">
                         AI telah memindai <strong>{activeFound.length}</strong> laporan temuan di database namun tidak menemukan kecocokan signifikan untuk <strong>"{activeLostItem?.title}"</strong>.
                       </p>
                     </div>
@@ -618,24 +618,24 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 {/* Info grid */}
                 <div className="p-8">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low dark:bg-inverse-surface border border-outline-variant/30 dark:border-outline/30 rounded-2xl">
                       <span className="material-symbols-outlined text-xl text-outline">query_stats</span>
                       <div>
-                        <p className="text-lg font-black text-on-surface tabular-nums">{matchRate}%</p>
+                        <p className="text-lg font-black text-on-surface dark:text-surface tabular-nums">{matchRate}%</p>
                         <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Skor Tertinggi</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low dark:bg-inverse-surface border border-outline-variant/30 dark:border-outline/30 rounded-2xl">
                       <span className="material-symbols-outlined text-xl text-outline">database</span>
                       <div>
-                        <p className="text-lg font-black text-on-surface tabular-nums">{activeFound.length}</p>
+                        <p className="text-lg font-black text-on-surface dark:text-surface tabular-nums">{activeFound.length}</p>
                         <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Data Dipindai</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-4 bg-surface-container-low border border-outline-variant/30 rounded-2xl">
+                    <div className="flex items-center gap-3 p-4 bg-surface-container-low dark:bg-inverse-surface border border-outline-variant/30 dark:border-outline/30 rounded-2xl">
                       <span className="material-symbols-outlined text-xl text-outline">trending_down</span>
                       <div>
-                        <p className="text-lg font-black text-on-surface">&lt; 25%</p>
+                        <p className="text-lg font-black text-on-surface dark:text-surface">&lt; 25%</p>
                         <p className="text-[10px] text-outline font-semibold uppercase tracking-wider">Ambang Batas</p>
                       </div>
                     </div>
@@ -643,8 +643,8 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
 
                   <div className="flex items-start gap-2.5 p-4 bg-primary/4 border border-primary/15 rounded-xl">
                     <span className="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0">lightbulb</span>
-                    <p className="text-xs text-on-surface-variant leading-relaxed">
-                      <strong className="text-on-surface">Saran:</strong> Barang ini mungkin belum dilaporkan sebagai temuan oleh penemu. Coba periksa kembali nanti atau laporkan langsung ke pos keamanan kampus.
+                    <p className="text-xs text-on-surface-variant dark:text-surface-variant leading-relaxed">
+                      <strong className="text-on-surface dark:text-surface">Saran:</strong> Barang ini mungkin belum dilaporkan sebagai temuan oleh penemu. Coba periksa kembali nanti atau laporkan langsung ke pos keamanan kampus.
                     </p>
                   </div>
                 </div>
@@ -653,7 +653,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
               <div className="flex justify-center mt-6">
                 <button
                   onClick={() => { setNoMatch(false); }}
-                  className="text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="text-xs text-on-surface-variant dark:text-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">refresh</span>
                   Coba Lagi dengan Item Lain
@@ -676,10 +676,10 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                 <span className="w-7 h-7 rounded-lg bg-success/10 flex items-center justify-center text-success">
                   <span className="material-symbols-outlined text-[18px]">verified</span>
                 </span>
-                <span className="font-label-md text-label-md text-on-surface font-bold">Hasil Analisis AI</span>
+                <span className="font-label-md text-label-md text-on-surface dark:text-surface font-bold">Hasil Analisis AI</span>
               </div>
 
-              <div className="bg-surface border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+              <div className="bg-surface dark:bg-on-background border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
                 
                 {/* Score Banner */}
                 <div className={`flex items-center justify-center gap-4 py-5 px-6 border-b ${getScoreBg(matchRate)}`}>
@@ -706,7 +706,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         {getScoreLabel(matchRate)}
                       </span>
                     </div>
-                    <p className="text-xs text-on-surface-variant mt-0.5">Skor kecocokan AI terhadap {activeFound.length} laporan temuan</p>
+                    <p className="text-xs text-on-surface-variant dark:text-surface-variant mt-0.5">Skor kecocokan AI terhadap {activeFound.length} laporan temuan</p>
                   </div>
                 </div>
 
@@ -724,12 +724,12 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         <span className="material-symbols-outlined text-2xl">{getIcon(activeLostItem)}</span>
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-headline-sm text-headline-sm text-on-surface font-bold truncate">{activeLostItem?.title}</h4>
-                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                        <h4 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface font-bold truncate">{activeLostItem?.title}</h4>
+                        <p className="text-xs text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mt-1">
                           <span className="material-symbols-outlined text-[14px] text-outline">person</span>
                           {activeLostItem?.users?.full_name || 'Anonim'}
                         </p>
-                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mt-0.5">
                           <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
                           {activeLostItem?.location || '-'}
                         </p>
@@ -751,12 +751,12 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         <span className="material-symbols-outlined text-2xl">{getIcon(bestFoundItem)}</span>
                       </div>
                       <div className="min-w-0">
-                        <h4 className="font-headline-sm text-headline-sm text-on-surface font-bold truncate">{bestFoundItem.title}</h4>
-                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+                        <h4 className="font-headline-sm text-headline-sm text-on-surface dark:text-surface font-bold truncate">{bestFoundItem.title}</h4>
+                        <p className="text-xs text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mt-1">
                           <span className="material-symbols-outlined text-[14px] text-outline">person</span>
                           {bestFoundItem.users?.full_name || 'Anonim'}
                         </p>
-                        <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-on-surface-variant dark:text-surface-variant flex items-center gap-1 mt-0.5">
                           <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
                           {bestFoundItem.location || '-'}
                         </p>
@@ -778,10 +778,10 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.3 + i * 0.1 }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low border border-outline-variant/40 rounded-full"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low dark:bg-inverse-surface border border-outline-variant/40 rounded-full"
                       >
                         <span className="material-symbols-outlined text-success text-[14px]">{r.icon}</span>
-                        <span className="text-[11px] text-on-surface-variant font-medium">{r.text}</span>
+                        <span className="text-[11px] text-on-surface-variant dark:text-surface-variant font-medium">{r.text}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -793,7 +793,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
               <div className="flex justify-center mt-6">
                 <button
                   onClick={() => { setIsMatched(false); setBestFoundItem(null); setReasons([]); }}
-                  className="text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="text-xs text-on-surface-variant dark:text-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <span className="material-symbols-outlined text-[16px]">refresh</span>
                   Coba Lagi dengan Item Lain

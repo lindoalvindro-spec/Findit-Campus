@@ -77,7 +77,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant dark:border-outline pt-16 pb-8">
+    <footer className="bg-surface-container-lowest dark:bg-on-background dark:bg-surface-container-lowest dark:bg-on-background border-t border-outline-variant dark:border-outline pt-16 pb-8">
       <div className="w-full px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 mb-12">
           
@@ -108,7 +108,7 @@ const Footer = () => {
               </motion.div>
               FindIt Campus
             </div>
-            <p className="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant max-w-[360px] leading-relaxed mt-2">
+            <p className="font-body-md text-body-md text-on-surface-variant dark:text-surface-variant dark:text-outline-variant max-w-[360px] leading-relaxed mt-2">
               Platform terpercaya bagi mahasiswa untuk melaporkan kehilangan dan penemuan barang di area kampus. Mari saling membantu menciptakan lingkungan yang lebih baik.
             </p>
             <div className="flex gap-3 mt-4">
@@ -125,7 +125,7 @@ const Footer = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className={`w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant ${link.hoverClass || 'hover:text-primary hover:border-primary hover:bg-primary/5'} transition-all shadow-sm cursor-pointer`}
+                  className={`w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant dark:text-surface-variant ${link.hoverClass || 'hover:text-primary hover:border-primary hover:bg-primary/5'} transition-all shadow-sm cursor-pointer`}
                   title={link.label}
                 >
                   {link.isSvg ? (
@@ -146,7 +146,7 @@ const Footer = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="md:col-span-5 flex flex-col gap-6 md:pl-8"
           >
-            <div className="flex items-center gap-2 text-on-surface dark:text-primary-fixed-dim">
+            <div className="flex items-center gap-2 text-on-surface dark:text-surface dark:text-primary-fixed-dim">
               <span className="material-symbols-outlined text-[22px] text-outline dark:text-outline-variant">group</span>
               <h3 className="font-label-md text-label-md font-semibold tracking-wide uppercase text-sm text-outline dark:text-outline-variant">Connect with Us!</h3>
             </div>
@@ -159,7 +159,7 @@ const Footer = () => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-outline-variant/60 bg-surface-container-low hover:border-primary hover:bg-primary/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-outline-variant/60 dark:border-outline/60 bg-surface-container-low dark:bg-inverse-surface hover:border-primary hover:bg-primary/5 transition-all group"
                 >
                   <img 
                     src={contrib.avatar} 
@@ -171,7 +171,7 @@ const Footer = () => {
                     }}
                   />
                   <div className="flex flex-col">
-                    <span className="font-label-md text-label-md text-on-surface font-medium group-hover:text-primary transition-colors">
+                    <span className="font-label-md text-label-md text-on-surface dark:text-surface font-medium group-hover:text-primary transition-colors">
                       {contrib.name}
                     </span>
                   </div>
@@ -184,7 +184,7 @@ const Footer = () => {
                       rel="noopener noreferrer"
                       whileHover={{ scale: 1.15 }}
                       whileTap={{ scale: 0.9 }}
-                      className="w-8 h-8 rounded-full border border-outline-variant/80 flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary hover:bg-primary/10 transition-all shadow-sm"
+                      className="w-8 h-8 rounded-full border border-outline-variant/80 flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-primary hover:border-primary hover:bg-primary/10 transition-all shadow-sm"
                       title="GitHub"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -197,7 +197,7 @@ const Footer = () => {
                       rel="noopener noreferrer"
                       whileHover={{ scale: 1.15 }}
                       whileTap={{ scale: 0.9 }}
-                      className="w-8 h-8 rounded-full border border-outline-variant/80 flex items-center justify-center text-on-surface-variant hover:text-pink-600 hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/20 transition-all shadow-sm"
+                      className="w-8 h-8 rounded-full border border-outline-variant/80 flex items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-pink-600 hover:border-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/20 transition-all shadow-sm"
                       title="Instagram"
                     >
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -217,7 +217,7 @@ const Footer = () => {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="pt-8 border-t border-outline-variant/60 flex flex-col md:flex-row items-center justify-between gap-4"
+          className="pt-8 border-t border-outline-variant/60 dark:border-outline/60 flex flex-col md:flex-row items-center justify-between gap-4"
         >
           <p className="font-body-sm text-body-sm text-outline">
             © {new Date().getFullYear()} FindIt Campus. Hak Cipta Dilindungi.
