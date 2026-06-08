@@ -82,6 +82,7 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
   const [bestFoundItem, setBestFoundItem] = useState(null);
   const [matchRate, setMatchRate] = useState(0);
   const [reasons, setReasons] = useState([]);
+  const [noMatch, setNoMatch] = useState(false);
   const scrollRef = useRef(null);
   const initializedRef = useRef(false);
 
@@ -100,13 +101,13 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
   useEffect(() => {
     if (selectedLostId) {
       const s = activeLost.find(i => i.id === selectedLostId);
-      if (s) { setActiveLostItem(s); setIsMatched(false); setBestFoundItem(null); setReasons([]); }
+      if (s) { setActiveLostItem(s); setIsMatched(false); setNoMatch(false); setBestFoundItem(null); setReasons([]); }
     }
   }, [selectedLostId]);
 
   const startScan = () => {
     if (!activeLostItem || isScanning) return;
-    setIsScanning(true); setIsMatched(false); setScanProgress(0);
+    setIsScanning(true); setIsMatched(false); setNoMatch(false); setScanProgress(0);
     setScanStepText('Inisialisasi AI Engine...');
     const result = calculateMatch(activeLostItem, activeFound);
     const steps = [
@@ -122,7 +123,12 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
         if (step.p === 100) {
           setTimeout(() => {
             setIsScanning(false);
-            if (result) { setBestFoundItem(result.item); setMatchRate(result.score); setReasons(result.reasons); setIsMatched(true); }
+            if (result && result.score >= 25) {
+              setBestFoundItem(result.item); setMatchRate(result.score); setReasons(result.reasons); setIsMatched(true);
+            } else {
+              setMatchRate(result ? result.score : 0);
+              setNoMatch(true);
+            }
           }, 500);
         }
       }, (idx + 1) * 600);
@@ -325,6 +331,54 @@ const AiMatchSimulator = ({ lostItems = [], foundItems = [] }) => {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Step 3: No Match Found */}
+        <AnimatePresence>
+          {noMatch && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 30 }}
+              transition={{ type: 'spring', damping: 18, stiffness: 120 }}
+            >
+              <div className="flex items-center gap-2 mb-5 px-1">
+                <span className="w-7 h-7 rounded-lg bg-outline-variant/20 flex items-center justify-center text-outline">
+                  <span className="material-symbols-outlined text-[18px]">search_off</span>
+                </span>
+                <span className="font-label-md text-label-md text-on-surface font-bold">Hasil Analisis AI</span>
+              </div>
+
+              <div className="bg-surface border border-outline-variant/50 rounded-3xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+                <div className="flex flex-col items-center justify-center py-14 px-8 text-center">
+                  <div className="w-20 h-20 rounded-full bg-outline-variant/10 flex items-center justify-center mb-5">
+                    <span className="material-symbols-outlined text-4xl text-outline-variant">search_off</span>
+                  </div>
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface font-bold mb-2">Tidak Ditemukan Kecocokan</h3>
+                  <p className="text-sm text-on-surface-variant max-w-sm leading-relaxed mb-4">
+                    AI telah memindai <strong>{activeFound.length}</strong> laporan barang temuan di database, namun tidak menemukan kecocokan yang signifikan untuk <strong>"{activeLostItem?.title}"</strong>.
+                  </p>
+                  <div className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant/30 rounded-xl">
+                    <span className="material-symbols-outlined text-outline text-[16px]">info</span>
+                    <span className="text-xs text-on-surface-variant">Skor tertinggi hanya <strong>{matchRate}%</strong> — di bawah ambang batas minimum (25%)</span>
+                  </div>
+                  <p className="text-xs text-outline mt-4 max-w-xs leading-relaxed">
+                    Barang ini mungkin belum dilaporkan sebagai temuan. Coba cek kembali nanti atau laporkan ke pihak kampus.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => { setNoMatch(false); }}
+                  className="text-xs text-on-surface-variant hover:text-primary font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">refresh</span>
+                  Coba Lagi dengan Item Lain
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Step 3: Match Results */}
         <AnimatePresence>
