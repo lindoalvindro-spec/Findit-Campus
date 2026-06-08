@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../services/apiClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CardSkeleton } from '../components/LoadingSkeleton';
 import uinLogo from '../assets/uin.png';
 import unriLogo from '../assets/unri.png';
@@ -13,10 +13,11 @@ import umriLogo from '../assets/umri.jpg';
 const Home = () => {
   const [lostItems, setLostItems] = useState([]);
   const [foundItems, setFoundItems] = useState([]);
+  const [previewItems, setPreviewItems] = useState([]);
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState('lost'); // 'lost' or 'found'
-  const [latestItem, setLatestItem] = useState(null);
   const navigate = useNavigate();
   
   const campuses = [
@@ -35,6 +36,15 @@ const Home = () => {
     successRate: 0
   });
 
+  // Rotation timer for preview widget
+  useEffect(() => {
+    if (previewItems.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentPreviewIndex((prevIndex) => (prevIndex + 1) % previewItems.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [previewItems]);
+
   useEffect(() => {
     const fetchDataAndStats = async () => {
       setLoading(true);
@@ -47,6 +57,17 @@ const Home = () => {
 
       if (!lostError && lostData) setLostItems(lostData.slice(0, 3));
       if (!foundError && foundData) setFoundItems(foundData.slice(0, 3));
+
+      // Combine lost and found items for preview widget
+      const combined = [];
+      const lItems = lostData || [];
+      const fItems = foundData || [];
+      const maxLen = Math.max(lItems.length, fItems.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (i < lItems.length) combined.push(lItems[i]);
+        if (i < fItems.length) combined.push(fItems[i]);
+      }
+      setPreviewItems(combined.slice(0, 6));
 
       // 3. Fetch real database statistics
       try {
@@ -64,10 +85,6 @@ const Home = () => {
             returned,
             successRate
           });
-
-          if (allItems.length > 0) {
-            setLatestItem(allItems[0]);
-          }
         }
       } catch (err) {
         console.error("Gagal memuat statistik database:", err);
@@ -263,106 +280,133 @@ const Home = () => {
                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                     className="relative w-full max-w-[340px]"
                   >
-                    {/* Base App Card Mockup */}
-                    <Link 
-                      to={latestItem ? `/item-detail?id=${latestItem.id}` : '/'} 
-                      className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 hover:border-primary/50 transition-all group/card cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="w-3 h-3 rounded-full bg-error"></span>
-                          <span className="w-3 h-3 rounded-full bg-warning"></span>
-                          <span className="w-3 h-3 rounded-full bg-success"></span>
-                        </div>
-                        <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
-                      </div>
+                    <AnimatePresence mode="wait">
+                      {previewItems.length > 0 && previewItems[currentPreviewIndex] ? (
+                        (() => {
+                          const activeItem = previewItems[currentPreviewIndex];
+                          return (
+                            <motion.div
+                              key={activeItem.id}
+                              initial={{ opacity: 0, scale: 0.94, y: 10 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.94, y: -10 }}
+                              transition={{ duration: 0.35, ease: "easeInOut" }}
+                              className="relative w-full"
+                            >
+                              {/* Base App Card Mockup */}
+                              <Link 
+                                to={`/item-detail?id=${activeItem.id}`} 
+                                className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 hover:border-primary/50 transition-all group/card cursor-pointer"
+                              >
+                                <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-error" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-warning" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-success" />
+                                  </div>
+                                  <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
+                                </div>
 
-                      <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4">
-                        {latestItem ? (
-                          <>
-                            <div className={`absolute top-3 right-3 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm ${
-                              latestItem.status === 'lost' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'
-                            }`}>
-                              {latestItem.status === 'lost' ? 'Hilang' : 'Ditemukan'}
-                            </div>
-                            {latestItem.image_url ? (
-                              <img src={latestItem.image_url} alt={latestItem.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-surface-container-high">
-                                <span className="material-symbols-outlined text-[54px] text-primary/30">
-                                  {latestItem.category === 'Kartu/Dokumen' || latestItem.title.toLowerCase().includes('ktm') ? 'badge' : 'inventory_2'}
+                                <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4 flex items-center justify-center border border-outline-variant/10">
+                                  <div className={`absolute top-3 right-3 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm ${
+                                    activeItem.status === 'lost' ? 'bg-error-container text-on-error-container' : 'bg-secondary-container text-on-secondary-container'
+                                  }`}>
+                                    {activeItem.status === 'lost' ? 'Hilang' : 'Ditemukan'}
+                                  </div>
+                                  {activeItem.image_url ? (
+                                    <img src={activeItem.image_url} alt={activeItem.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-300" />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-surface-container-high">
+                                      <span className="material-symbols-outlined text-[54px] text-primary/30">
+                                        {activeItem.category === 'Kartu/Dokumen' || activeItem.title.toLowerCase().includes('ktm') ? 'badge' : 'inventory_2'}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1 truncate group-hover/card:text-primary transition-colors text-left">
+                                  {activeItem.title}
+                                </h4>
+                                <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1 truncate text-left">
+                                  <span className="material-symbols-outlined text-sm text-outline">location_on</span>
+                                  {activeItem.location || 'Area Kampus'}
+                                </p>
+                                <p className="font-body-sm text-body-sm text-outline flex items-center gap-1 mb-3 truncate text-left">
+                                  <span className="material-symbols-outlined text-sm">school</span>
+                                  {activeItem.campus || 'UIN Suska Riau'}
+                                </p>
+                                
+                                {/* 3-second cycle progress bar */}
+                                <div className="w-full h-1.5 bg-outline-variant/30 rounded-full overflow-hidden relative">
+                                  <motion.div 
+                                    key={activeItem.id}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: "100%" }}
+                                    transition={{ duration: 3, ease: "linear" }}
+                                    className={`h-full ${activeItem.status === 'lost' ? 'bg-primary' : 'bg-secondary'}`}
+                                  />
+                                </div>
+                              </Link>
+
+                              {/* Overlapping Chat Bubble Mockup */}
+                              <motion.div 
+                                animate={{ y: [0, 6, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                                className="absolute -bottom-6 -left-8 bg-primary text-on-primary rounded-2xl rounded-bl-none p-3.5 shadow-[0_10px_25px_rgba(0,40,142,0.15)] text-[12px] max-w-[210px] z-20 border border-primary-container text-left"
+                              >
+                                <div className="font-bold text-[10px] opacity-75 mb-1 text-white/95">
+                                  {activeItem.users?.full_name || 'Pengguna'} ({activeItem.status === 'lost' ? 'Owner' : 'Finder'})
+                                </div>
+                                {activeItem.status === 'lost' 
+                                  ? `"${activeItem.users?.full_name || 'Saya'} membuat laporan kehilangan barang ini, mohon hubungi jika ada info..."`
+                                  : `"${activeItem.users?.full_name || 'Saya'} melaporkan penemuan barang ini, silakan hubungi untuk serah terima..."`}
+                              </motion.div>
+
+                              {/* Overlapping AI Match Badge Mockup */}
+                              <motion.div 
+                                animate={{ y: [0, -6, 0] }}
+                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                                className={`absolute -top-8 -right-6 rounded-2xl p-3 shadow-[0_10px_25px_rgba(0,0,0,0.08)] text-xs font-semibold z-20 border flex items-center gap-2 ${
+                                  activeItem.status === 'lost' 
+                                    ? 'bg-error-container text-on-error-container border-error/20' 
+                                    : 'bg-secondary-container text-on-secondary-container border-secondary/20'
+                                }`}
+                              >
+                                <span className={`material-symbols-outlined text-lg ${
+                                  activeItem.status === 'lost' ? 'text-error' : 'text-secondary'
+                                }`}>
+                                  {activeItem.status === 'lost' ? 'new_releases' : 'verified'}
                                 </span>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div className="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
-                              Ditemukan
-                            </div>
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/5 to-surface-container-high">
-                              <span className="material-symbols-outlined text-[54px] text-primary/30">badge</span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1 truncate group-hover/card:text-primary transition-colors">
-                        {latestItem ? latestItem.title : "KTM Mahasiswa - UIN Suska"}
-                      </h4>
-                      <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1 truncate">
-                        <span className="material-symbols-outlined text-sm text-outline">location_on</span>
-                        {latestItem ? (latestItem.location || 'Area Kampus') : "Perpustakaan Gedung Rektorat"}
-                      </p>
-                      <p className="font-body-sm text-body-sm text-outline flex items-center gap-1 mb-3 truncate">
-                        <span className="material-symbols-outlined text-sm">school</span>
-                        {latestItem ? (latestItem.campus || 'UIN Suska Riau') : "UIN Suska Riau"}
-                      </p>
-                      <div className="w-full h-2 bg-outline-variant/30 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: "98%" }}
-                          transition={{ duration: 1.5, delay: 0.8 }}
-                          className="h-full bg-primary"
-                        ></motion.div>
-                      </div>
-                    </Link>
-
-                    {/* Overlapping Chat Bubble Mockup */}
-                    <motion.div 
-                      animate={{ y: [0, 6, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                      className="absolute -bottom-6 -left-8 bg-primary text-on-primary rounded-2xl rounded-bl-none p-3.5 shadow-[0_10px_25px_rgba(0,40,142,0.15)] text-[12px] max-w-[210px] z-20 border border-primary-container"
-                    >
-                      <div className="font-bold text-[10px] opacity-75 mb-1">
-                        {latestItem ? (latestItem.users?.full_name || 'Pengguna') : 'Rizki Amanda'} ({latestItem && latestItem.status === 'lost' ? 'Owner' : 'Finder'})
-                      </div>
-                      {latestItem ? (
-                        latestItem.status === 'lost' 
-                          ? `"${latestItem.users?.full_name || 'Saya'} membuat laporan kehilangan barang ini, mohon hubungi jika ada info..."`
-                          : `"${latestItem.users?.full_name || 'Saya'} melaporkan penemuan barang ini, silakan hubungi untuk serah terima..."`
+                                {activeItem.status === 'lost' ? 'Laporan Hilang Terbaru' : 'Laporan Temuan Terbaru'}
+                              </motion.div>
+                            </motion.div>
+                          );
+                        })()
                       ) : (
-                        `"Halo! Saya menemukan KTM Anda tergeletak di meja perpus lantai 2..."`
+                        // Default mockup in case database is empty
+                        <div className="block bg-surface/80 dark:bg-surface-container-low/95 border border-outline-variant/60 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl p-5 backdrop-blur-md relative z-10 w-[340px]">
+                          <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded-full bg-error"></span>
+                              <span className="w-3 h-3 rounded-full bg-warning"></span>
+                              <span className="w-3 h-3 rounded-full bg-success"></span>
+                            </div>
+                            <span className="text-[11px] font-bold tracking-widest text-outline uppercase">FindIt Preview</span>
+                          </div>
+                          <div className="rounded-2xl overflow-hidden h-40 bg-surface-container relative mb-4 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[54px] text-primary/30">inventory_2</span>
+                          </div>
+                          <h4 className="font-label-md text-label-md text-on-surface font-semibold mb-1">
+                            Belum Ada Laporan
+                          </h4>
+                          <p className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mb-1">
+                            <span className="material-symbols-outlined text-sm text-outline">location_on</span>
+                            -
+                          </p>
+                          <div className="w-full h-2 bg-outline-variant/30 rounded-full overflow-hidden" />
+                        </div>
                       )}
-                    </motion.div>
-
-                    {/* Overlapping AI Match Badge */}
-                    <motion.div 
-                      animate={{ y: [0, -6, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                      className={`absolute -top-8 -right-6 rounded-2xl p-3 shadow-[0_10px_25px_rgba(0,0,0,0.08)] text-xs font-semibold z-20 border flex items-center gap-2 ${
-                        latestItem && latestItem.status === 'lost' 
-                          ? 'bg-error-container text-on-error-container border-error/20' 
-                          : 'bg-secondary-container text-on-secondary-container border-secondary/20'
-                      }`}
-                    >
-                      <span className={`material-symbols-outlined text-lg ${
-                        latestItem && latestItem.status === 'lost' ? 'text-error' : 'text-secondary'
-                      }`}>
-                        new_releases
-                      </span>
-                      {latestItem && latestItem.status === 'lost' ? 'Laporan Hilang Terbaru' : 'Laporan Temuan Terbaru'}
-                    </motion.div>
+                    </AnimatePresence>
                   </motion.div>
                 )}
               </motion.div>
