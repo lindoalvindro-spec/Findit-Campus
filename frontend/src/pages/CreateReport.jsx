@@ -428,18 +428,48 @@ const CreateReport = () => {
                     </div>
                     
                     <div>
-                      <label className="font-label-sm text-label-sm text-on-surface-variant mb-1.5 block" htmlFor="time">Waktu (Perkiraan) <span className="text-error">*</span></label>
-                      <input 
-                        value={formData.time}
-                        onChange={handleChange}
-                        className={inputClass}
-                        id="time" 
-                        name="time" 
-                        required 
-                        type="time"
-                        lang="en-GB"
-                        step="60"
-                      />
+                      <label className="font-label-sm text-label-sm text-on-surface-variant mb-1.5 block">Waktu (Perkiraan) <span className="text-error">*</span></label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <select
+                            value={formData.time ? formData.time.split(':')[0] : ''}
+                            onChange={(e) => {
+                              const mins = formData.time ? formData.time.split(':')[1] || '00' : '00';
+                              setFormData({ ...formData, time: `${e.target.value}:${mins}` });
+                            }}
+                            className={`${inputClass} appearance-none pr-8`}
+                            required
+                          >
+                            <option disabled value="">Jam</option>
+                            {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
+                              <option key={h} value={h}>{h}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-on-surface-variant">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                          </div>
+                        </div>
+                        <span className="text-on-surface font-bold text-lg select-none">:</span>
+                        <div className="relative flex-1">
+                          <select
+                            value={formData.time ? formData.time.split(':')[1] || '' : ''}
+                            onChange={(e) => {
+                              const hrs = formData.time ? formData.time.split(':')[0] || '00' : '00';
+                              setFormData({ ...formData, time: `${hrs}:${e.target.value}` });
+                            }}
+                            className={`${inputClass} appearance-none pr-8`}
+                            required
+                          >
+                            <option disabled value="">Menit</option>
+                            {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(m => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-on-surface-variant">
+                            <span className="material-symbols-outlined text-[18px]">expand_more</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
