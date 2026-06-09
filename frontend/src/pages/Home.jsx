@@ -102,15 +102,29 @@ const Home = () => {
  }, []);
 
 
- const tickerMessages = [
-"KTM atas nama 'Reza Amanda' berhasil diserahkan kembali ke pemiliknya di Perpustakaan",
-"Laporan Kehilangan Baru: Kunci Honda Beat hitam di Parkiran Fakultas Tarbiyah UIN Suska",
-"Dompet kulit pria cokelat telah diserahkan di Fakultas Sains & Teknologi",
-"Laporan Temuan Baru: Charger Macbook Putih di Musholla FST",
-"Kunci motor Vario dengan gantungan boneka telah ditemukan di depan PKM",
-"Laporan Kehilangan Baru: Jas Almamater biru di Gedung Rektorat Lt. 3"
- ];
- const doubledMessages = [...tickerMessages, ...tickerMessages];
+  const tickerMessages = React.useMemo(() => {
+    if (!mapAllItems || mapAllItems.length === 0) {
+      return ["Memuat data terbaru dari FindIt Campus..."];
+    }
+    
+    // Sort by created_at descending to get the most recent items, take top 8
+    const recentItems = [...mapAllItems]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 8);
+      
+    return recentItems.map(item => {
+      if (item.status === 'lost') {
+        return `Laporan Kehilangan Baru: ${item.title} di ${item.location || 'Kampus'}`;
+      } else if (item.status === 'found') {
+        return `Laporan Temuan Baru: ${item.title} di ${item.location || 'Kampus'}`;
+      } else if (item.status === 'returned' || item.status === 'claimed') {
+        return `${item.title} telah dikembalikan ke pemiliknya dengan aman`;
+      }
+      return `${item.title} di ${item.location || 'Kampus'}`;
+    });
+  }, [mapAllItems]);
+
+  const doubledMessages = [...tickerMessages, ...tickerMessages];
 
  const handleSearch = (e) => {
  e.preventDefault();
