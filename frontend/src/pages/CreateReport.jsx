@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { checkImage } from '../utils/nsfwCheck';
 import { useToast } from '../components/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
 
 const CreateReport = () => {
   const navigate = useNavigate();
@@ -100,24 +101,41 @@ const CreateReport = () => {
         toast.warning('Ukuran gambar terlalu besar. Maksimal 10MB.');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const dataUrl = reader.result;
 
-        // NSFW Check
-        setLoading(true);
-        const { isSafe, reason } = await checkImage(dataUrl);
+      setLoading(true);
+      try {
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 1280,
+          useWebWorker: true,
+          initialQuality: 0.8
+        };
+        
+        const compressedFile = await imageCompression(file, options);
+        
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const dataUrl = reader.result;
+
+          // NSFW Check
+          const { isSafe, reason } = await checkImage(dataUrl);
+
+          if (!isSafe) {
+            setLoading(false);
+            toast.error(`Foto ditolak: ${reason}`, 'Konten Tidak Sesuai');
+            e.target.value = ''; // Reset file input
+            return;
+          }
+
+          setFormData({ ...formData, imageUrl: dataUrl });
+          setLoading(false);
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        toast.error('Gagal memproses gambar. Silakan coba lagi.');
         setLoading(false);
-
-        if (!isSafe) {
-          toast.error(`Foto ditolak: ${reason}`, 'Konten Tidak Sesuai');
-          e.target.value = ''; // Reset file input
-          return;
-        }
-
-        setFormData({ ...formData, imageUrl: dataUrl });
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
 

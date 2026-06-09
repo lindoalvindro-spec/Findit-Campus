@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
 import confetti from 'canvas-confetti';
+import imageCompression from 'browser-image-compression';
 
 const Profile = () => {
  const navigate = useNavigate();
@@ -73,18 +74,33 @@ const Profile = () => {
 
 
  // Profile Edit Handlers
- const handleImageChange = (e) => {
+ const handleImageChange = async (e) => {
  const file = e.target.files[0];
  if (file) {
  if (file.size > 2 * 1024 * 1024) {
  toast.warning('Ukuran gambar terlalu besar. Maksimal 2MB.');
  return;
  }
+ 
+ try {
+ const options = {
+ maxSizeMB: 0.1, // 100KB for avatars
+ maxWidthOrHeight: 500,
+ useWebWorker: true,
+ initialQuality: 0.8
+ };
+ 
+ const compressedFile = await imageCompression(file, options);
+ 
  const reader = new FileReader();
  reader.onloadend = () => {
  setAvatarUrl(reader.result);
  };
- reader.readAsDataURL(file);
+ reader.readAsDataURL(compressedFile);
+ } catch (error) {
+ console.error('Error compressing avatar:', error);
+ toast.error('Gagal memproses foto profil.');
+ }
  }
  };
 

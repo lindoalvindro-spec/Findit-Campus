@@ -7,6 +7,7 @@ import { useToast } from '../components/Toast';
 import { useConfirm } from '../components/ConfirmDialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
+import imageCompression from 'browser-image-compression';
 
 const formatLastSeen = (dateString) => {
  if (!dateString) return '';
@@ -319,24 +320,41 @@ const Messages = () => {
  return;
  }
 
+ setIsCheckingImage(true);
+ try {
+ const options = {
+ maxSizeMB: 0.5,
+ maxWidthOrHeight: 1280,
+ useWebWorker: true,
+ initialQuality: 0.8
+ };
+ 
+ const compressedFile = await imageCompression(file, options);
+
  const reader = new FileReader();
  reader.onloadend = async () => {
  const dataUrl = reader.result;
 
  // NSFW Check
- setIsCheckingImage(true);
  const { isSafe, reason } = await checkImage(dataUrl);
- setIsCheckingImage(false);
 
  if (!isSafe) {
+ setIsCheckingImage(false);
  toast.error(`Foto ditolak: ${reason}`, 'Konten Tidak Sesuai');
  e.target.value = '';
  return;
  }
 
  setImagePreview(dataUrl);
+ setIsCheckingImage(false);
  };
- reader.readAsDataURL(file);
+ reader.readAsDataURL(compressedFile);
+ } catch (error) {
+ console.error('Error compressing image:', error);
+ toast.error('Gagal memproses gambar.');
+ setIsCheckingImage(false);
+ }
+ 
  e.target.value = ''; // Reset so same file can be re-selected
  };
 
