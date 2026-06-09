@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import CreateReport from './pages/CreateReport';
@@ -14,6 +15,38 @@ import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
 import OneSignal from 'react-onesignal';
 import { useEffect } from 'react';
+
+const PageTransition = ({ children }) => (
+ <motion.div
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -12 }}
+  transition={{ duration: 0.25, ease: 'easeInOut' }}
+  style={{ minHeight: '100vh' }}
+ >
+  {children}
+ </motion.div>
+);
+
+function AnimatedRoutes() {
+ const location = useLocation();
+ return (
+  <AnimatePresence mode="wait">
+   <Routes location={location} key={location.pathname}>
+    <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+    <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+    <Route path="/create-report" element={<PageTransition><CreateReport /></PageTransition>} />
+    <Route path="/item-detail" element={<PageTransition><ItemDetail /></PageTransition>} />
+    <Route path="/lost-items" element={<PageTransition><LostItems /></PageTransition>} />
+    <Route path="/found-items" element={<PageTransition><FoundItems /></PageTransition>} />
+    <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+    <Route path="/messages" element={<PageTransition><Messages /></PageTransition>} />
+    <Route path="/forgot-password" element={<PageTransition><ForgotPassword /></PageTransition>} />
+    <Route path="/reset-password" element={<PageTransition><ResetPassword /></PageTransition>} />
+   </Routes>
+  </AnimatePresence>
+ );
+}
 
 function App() {
  useEffect(() => {
@@ -72,18 +105,7 @@ function App() {
  <ToastProvider>
  <ConfirmProvider>
  <BrowserRouter>
- <Routes>
- <Route path="/" element={<Home />} />
- <Route path="/auth" element={<Auth />} />
- <Route path="/create-report" element={<CreateReport />} />
- <Route path="/item-detail" element={<ItemDetail />} />
- <Route path="/lost-items" element={<LostItems />} />
- <Route path="/found-items" element={<FoundItems />} />
- <Route path="/profile" element={<Profile />} />
- <Route path="/messages" element={<Messages />} />
- <Route path="/forgot-password" element={<ForgotPassword />} />
- <Route path="/reset-password" element={<ResetPassword />} />
- </Routes>
+  <AnimatedRoutes />
  </BrowserRouter>
  </ConfirmProvider>
  </ToastProvider>

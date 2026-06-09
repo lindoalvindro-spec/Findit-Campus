@@ -171,7 +171,7 @@ const Home = () => {
 
  <main className="flex-grow">
  {/* Hero Section */}
- <section className="relative bg-gradient-to-b from-surface-container-low via-surface-container-low to-surface overflow-hidden py-20 lg:py-28">
+ <section className="relative bg-gradient-to-b from-surface-container-low via-surface-container-low to-surface overflow-hidden py-20 lg:py-28 grain-overlay">
  <div className="px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto relative z-10">
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
  
@@ -182,17 +182,31 @@ const Home = () => {
  transition={{ duration: 0.8, ease:"easeOut" }}
  className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left"
  >
- <motion.h1 
- initial={{ opacity: 0, y: 20 }}
- animate={{ opacity: 1, y: 0 }}
- transition={{ duration: 0.6, delay: 0.2 }}
- className="font-headline-xl text-headline-xl text-on-surface mb-6 max-w-[672px] leading-tight font-bold"
+ <h1 className="font-headline-xl text-headline-xl text-on-surface mb-6 max-w-[672px] leading-tight font-bold">
+ {['Temukan', 'Barangmu,'].map((word, i) => (
+ <motion.span
+ key={i}
+ initial={{ opacity: 0, y: 25, filter: 'blur(4px)' }}
+ animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+ transition={{ duration: 0.5, delay: 0.2 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+ className="inline-block mr-2"
  >
- Temukan Barangmu, <br className="hidden sm:inline" />
- <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-surface-tint to-[#2563eb]">
- Bantu Temanmu.
- </span>
- </motion.h1>
+ {word}
+ </motion.span>
+ ))}
+ <br className="hidden sm:inline" />
+ {['Bantu', 'Temanmu.'].map((word, i) => (
+ <motion.span
+ key={`g-${i}`}
+ initial={{ opacity: 0, y: 25, filter: 'blur(4px)' }}
+ animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+ transition={{ duration: 0.5, delay: 0.5 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+ className="inline-block mr-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-surface-tint to-[#2563eb]"
+ >
+ {word}
+ </motion.span>
+ ))}
+ </h1>
  <motion.p 
  initial={{ opacity: 0, y: 20 }}
  animate={{ opacity: 1, y: 0 }}
@@ -815,14 +829,26 @@ const Home = () => {
  <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full filter blur-3xl pointer-events-none"></div>
 
  <div className="flex justify-between items-end mb-10 relative z-10">
- <div>
+ <motion.div
+ initial={{ opacity: 0, x: -20 }}
+ whileInView={{ opacity: 1, x: 0 }}
+ viewport={{ once: true }}
+ transition={{ duration: 0.5 }}
+ >
  <span className="font-label-md text-label-md text-primary tracking-widest uppercase mb-1 block">Mari Membantu</span>
  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Hilang Terbaru</h2>
  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Bantu teman menemukan barang mereka di lingkungan kampus.</p>
- </div>
- <Link className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/lost-items">
+ </motion.div>
+ <motion.div
+ initial={{ opacity: 0, x: 20 }}
+ whileInView={{ opacity: 1, x: 0 }}
+ viewport={{ once: true }}
+ transition={{ duration: 0.5, delay: 0.1 }}
+ >
+ <Link className="text-primary font-label-md text-label-md animated-underline flex items-center gap-1 font-semibold" to="/lost-items">
  Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
  </Link>
+ </motion.div>
  </div>
  
  <motion.div 
@@ -877,7 +903,7 @@ const Home = () => {
  </span>
  </div>
  )}
- <div className="absolute top-3 left-3 bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
+ <div className="absolute top-3 left-3 badge-glass text-on-error-container bg-error-container/80 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
  Hilang
  </div>
  {item.campus && (
@@ -916,14 +942,26 @@ const Home = () => {
  <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full filter blur-3xl pointer-events-none"></div>
 
  <div className="flex justify-between items-end mb-10 relative z-10">
- <div>
+ <motion.div
+ initial={{ opacity: 0, x: -20 }}
+ whileInView={{ opacity: 1, x: 0 }}
+ viewport={{ once: true }}
+ transition={{ duration: 0.5 }}
+ >
  <span className="font-label-md text-label-md text-secondary tracking-widest uppercase mb-1 block">Barang Temuan</span>
  <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Barang Temuan Terbaru</h2>
  <p className="font-body-md text-body-md text-on-surface-variant mt-2">Cek daftar berikut jika Anda merasa kehilangan barang berharga Anda.</p>
- </div>
- <Link className="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1 font-semibold" to="/found-items">
+ </motion.div>
+ <motion.div
+ initial={{ opacity: 0, x: 20 }}
+ whileInView={{ opacity: 1, x: 0 }}
+ viewport={{ once: true }}
+ transition={{ duration: 0.5, delay: 0.1 }}
+ >
+ <Link className="text-secondary font-label-md text-label-md animated-underline flex items-center gap-1 font-semibold" to="/found-items">
  Lihat Semua <span className="material-symbols-outlined text-sm">arrow_forward</span>
  </Link>
+ </motion.div>
  </div>
  
  <motion.div 
@@ -978,7 +1016,7 @@ const Home = () => {
  </span>
  </div>
  )}
- <div className="absolute top-3 left-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
+ <div className="absolute top-3 left-3 badge-glass text-on-secondary-container bg-secondary-container/80 px-3 py-1 rounded-full font-label-sm text-[11px] font-semibold z-10 shadow-sm">
  Ditemukan
  </div>
  {item.campus && (
@@ -1018,12 +1056,16 @@ const Home = () => {
  Apakah Anda kehilangan barang berharga? Atau menemukan barang milik mahasiswa lain? Laporkan sekarang untuk mengembalikannya ke pemilik sah.
  </p>
  <div className="flex flex-col sm:flex-row justify-center gap-4">
- <Link to="/create-report?type=lost" className="px-8 py-3.5 bg-surface text-primary font-label-md text-label-md rounded-full hover:bg-surface-container-high transition-all shadow-md font-semibold text-center">
+ <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+ <Link to="/create-report?type=lost" className="block px-8 py-3.5 bg-surface text-primary font-label-md text-label-md rounded-full hover:bg-surface-container-high transition-all shadow-md hover:shadow-xl font-semibold text-center">
  Laporkan Kehilangan
  </Link>
- <Link to="/create-report?type=found" className="px-8 py-3.5 bg-transparent border-2 border-surface text-on-primary font-label-md text-label-md rounded-full hover:bg-surface/10 transition-all font-semibold text-center">
+ </motion.div>
+ <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }} transition={{ type: 'spring', stiffness: 400, damping: 15 }}>
+ <Link to="/create-report?type=found" className="block px-8 py-3.5 bg-transparent border-2 border-surface text-on-primary font-label-md text-label-md rounded-full hover:bg-surface/10 transition-all font-semibold text-center">
  Laporkan Temuan
  </Link>
+ </motion.div>
  </div>
  </div>
  </section>
