@@ -436,7 +436,9 @@ const CreateReport = () => {
                         id="time" 
                         name="time" 
                         required 
-                        type="time" 
+                        type="time"
+                        lang="en-GB"
+                        step="60"
                       />
                     </div>
                   </div>
