@@ -13,6 +13,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastProvider } from './components/Toast';
 import { ConfirmProvider } from './components/ConfirmDialog';
+import Chatbot from './components/Chatbot';
 import OneSignal from 'react-onesignal';
 import { useEffect } from 'react';
 
@@ -106,6 +107,7 @@ function App() {
  <ConfirmProvider>
  <BrowserRouter>
   <AnimatedRoutes />
+  <Chatbot />
  </BrowserRouter>
  </ConfirmProvider>
  </ToastProvider>

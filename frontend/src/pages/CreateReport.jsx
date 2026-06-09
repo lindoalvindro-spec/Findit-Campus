@@ -713,7 +713,12 @@ const CreateReport = () => {
               <div>
                 <h3 className="font-label-md text-label-md text-on-surface font-semibold">Butuh Bantuan?</h3>
                 <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 mb-2 leading-relaxed">Jika Anda kesulitan menggunakan form ini, hubungi pusat layanan kami.</p>
-                <a className="font-label-sm text-label-sm text-primary animated-underline inline-block" href="#">Hubungi Bantuan</a>
+                <button 
+                  onClick={(e) => { e.preventDefault(); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
+                  className="font-label-sm text-label-sm text-primary animated-underline inline-block text-left"
+                >
+                  Hubungi Bantuan
+                </button>
               </div>
             </motion.div>
           </motion.div>
