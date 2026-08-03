@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { sendResetPasswordEmail } = require('../config/mailer');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkeyfinditcampusuas2026';
 
@@ -233,7 +234,7 @@ exports.updateLastSeen = async (req, res) => {
   }
 };
 
-// Forgot Password (Simulated for local/test)
+// Forgot Password - Kirim email reset via Gmail SMTP (Bypass DB untuk Test)
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -242,29 +243,38 @@ exports.forgotPassword = async (req, res) => {
   }
 
   try {
-    const queryText = 'SELECT * FROM users WHERE email = $1';
-    const result = await db.query(queryText, [email.toLowerCase().trim()]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Email tidak terdaftar.' });
-    }
+    // BYPASS SUPABASE: Langsung anggap email valid untuk keperluan testing
+    console.log(`[TEST MODE] Mengabaikan pengecekan database untuk email: ${email}`);
+    
+    // Mock user object
+    const user = {
+      email: email.toLowerCase().trim(),
+      full_name: 'Pengguna Test'
+    };
 
     // Generate short-lived reset token (15 mins)
     const token = jwt.sign(
-      { email: email.toLowerCase().trim() },
+      { email: user.email },
       JWT_SECRET,
       { expiresIn: '15m' }
     );
 
+    // Buat reset link
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+    // Kirim email via Gmail SMTP
+    await sendResetPasswordEmail(user.email, user.full_name, resetLink);
+
     res.status(200).json({
-      message: 'Permintaan reset password berhasil diproses.',
-      token
+      message: 'Instruksi reset kata sandi telah dikirim ke email Anda (Test Mode).'
     });
   } catch (error) {
     console.error('Forgot Password Error:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan saat memproses lupa kata sandi.' });
+    res.status(500).json({ message: 'Terjadi kesalahan saat mengirim email reset kata sandi.' });
   }
 };
+
 
 // Verify Reset Token
 exports.verifyResetToken = async (req, res) => {

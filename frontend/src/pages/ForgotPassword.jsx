@@ -20,11 +20,14 @@ const ForgotPassword = () => {
  if (error) throw new Error(error.message);
 
  setMessage(
- <div>
- <p className="mb-2">Tautan pemulihan kata sandi berhasil dibuat! Silakan klik tombol/link di bawah ini untuk mereset kata sandi:</p>
- <Link to={`/reset-password?token=${data.token}`} className="text-primary hover:underline font-bold break-all block mt-2 p-2 bg-primary/10 rounded text-center">
- Atur Ulang Kata Sandi
- </Link>
+ <div className="text-center">
+ <div className="text-4xl mb-3 animate-bounce">📧</div>
+ <p className="font-semibold mb-1">Email Terkirim!</p>
+ <p className="text-sm opacity-80">
+ Kami telah mengirimkan link reset kata sandi ke <strong>{email}</strong>. 
+ Silakan cek inbox atau folder spam Anda.
+ </p>
+ <p className="text-xs mt-2 opacity-60">Link akan kedaluwarsa dalam 15 menit.</p>
  </div>
  );
  } catch (err) {
